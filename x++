@@ -1,0 +1,17 @@
+#!/bin/bash
+
+/usr/bin/X -br -nolisten tcp :1 vt9 &> xlog & 
+XPid=$!
+[[ $? -eq 0 ]]&&{
+	sleep 5
+
+	DISPLAY=:1.0
+
+	evilwm &
+	WmPid=$!
+
+	xterm  &
+	TermPid=$!
+	
+	wait ${TermPid} && { kill ${WmPid}; kill ${XPid}; }
+}
