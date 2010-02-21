@@ -16,17 +16,17 @@
 # You should have received a copy of the GNU General Public License     #
 # along with this program; if not, see <http://www.gnu.org/licenses/>.  #
 #########################################################################
-#:begin_jpara
-#-h|--help:Help#show this
-#-o|--outdir:Outprefix#output directory
-#-b|--begin:cnt#start with <begin>
-#:end_jpara
+#:begin_args
+#-h|--help : Help # show this
+#-o+|--outdir+ : Outprefix # output directory
+#-b+|--begin+ : cnt # start with <begin>
+#:end_args
 . /usr/lib/psytools.sh
-jtestpara $0 "$@"
+getArgs $0 "$@"
 tt dos2unix,iconv,wget || help=1
 [[ ${Help} ]] && { genarghelp $0; exit; }
-[[ "${Outprefix}" == "-o" || ! ${Outprefix} ]] && Outprefix="."
-[[ "${cnt}" == "-b" || "${cnt}" == "--begin" || ! ${cnt} ]] && cnt="2"
+[[ ! ${Outprefix} ]] && Outprefix="."
+[[ ! ${cnt} ]] && cnt="2"
 
 extract()
 {

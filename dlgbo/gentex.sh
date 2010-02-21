@@ -16,19 +16,19 @@
 # You should have received a copy of the GNU General Public License     #
 # along with this program; if not, see <http://www.gnu.org/licenses/>.  #
 #########################################################################
-#:begin_jpara
-#-i|--indir:Indir# input directory
-#-o|--outdir:Outdir# output directory
-#-h|--help:Help# show this
-#:end_jpara
+#:begin_args
+#-i+|--indir+ : Indir # input directory
+#-o+|--outdir+ : Outdir # output directory
+#-h|--help : Help # show this
+#:end_args
 
 . /usr/lib/psytools.sh
 tt html2latex || exit
 jtestpara $0 "$@" || exit
 
 [[ ${Help} ]] && { genarghelp $0; exit; }
-[[ "${Outdir}" == "-o" || "${Outdir}" == "--outdir" || ! ${Outdir} ]] && Outdir="."
-[[ "${Indir}" == "-i" || "${Indir}" == "--indir" || ! ${Indir} ]] && Indir="."
+[[ ! ${Outdir} ]] && Outdir="./out/"
+[[ ! ${Indir} ]] && Indir="./in/"
 
 Fx=0
 Cnt=0
