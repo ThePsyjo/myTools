@@ -7,20 +7,20 @@
 # Distributed under the terms of the GNU General Public License v2
 
 #:begin_version
-#Version 1.2.2
+#Version 1.2.3
 #:end_version
 
 . /usr/lib/psytools.sh
 
-#:begin_jpara
-#-f | --file : File # file to use
-#-s | --fs | --fieldseperator : deli # use costum fieldseperator
+#:begin_args
+#-f+ | --file+ : File # file to use
+#-s+ | --fs+ | --fieldseperator+ : deli # use costum fieldseperator
 #-n | --nocolor : Nocolor # disable color output
 #-t | --tabs : Tab # tab-output
 #-h | --help : Help # display this help
-#:end_jpara
+#:end_args
 
-jtestpara $0 "$@"
+getArgs $0 "$@" || Help=set
 
 [[ ${Nocolor} ]] && unset YELOW HIBLUE BLUE GREEN RED WARN ERROR GOOD
 dsplhelp() { get_ver $0 /usr/lib/psytools.sh;echo; genarghelp $0; exit; }
@@ -29,7 +29,6 @@ dsplhelp() { get_ver $0 /usr/lib/psytools.sh;echo; genarghelp $0; exit; }
 [[ ! ${deli} ]] && deli="," # default seperator
 
 [[ ! ${File} ]] && dsplhelp
-[[ "${File}" == "-f" || "${File}" == "--file" ]] && { jerror "${File} needs an argument"; dsplhelp; }
 [[ $(fex ${File}) ]] && { jerror "file \"${File}\" not found, abort"; dsplhelp; }
 
 [[ $(head -1 ${File} | grep "date,refID,refType,ownerName1,ownerName2,argName1,amount,balance,reason") ]] && { jinfo "using journal mode\n"; Journal=1; }
