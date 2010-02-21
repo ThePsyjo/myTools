@@ -1,0 +1,15 @@
+#!begin_version
+#
+#!end_version
+OPTS="-j 4"   # makeopts
+IMGPATH="/usr/src/linux/arch/<arch>/boot/bzImage"
+LINPATH="/usr/src/linux"
+SRCPATH="/usr/src/"
+
+# sortieralgoritmus
+#SORTAL="ls -dx1 $LINPATH* | sort -g -n -t - -k 4.2,4.3 | sort -t - -k 2 | tail -n 1"
+
+PkgMgr="emerge -1" # rebuildcommand
+GRAFIKTREIBER="<vga-driver>"
+
+USERFUNCT_DIR="<path/to/userfuncts.sh>"

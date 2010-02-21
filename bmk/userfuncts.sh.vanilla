@@ -1,0 +1,84 @@
+# Copyright 2006 Psyjo©
+# Distributed under the terms of the GNU General Public License v3
+#!begin_version
+#
+#!end_version
+#Spezialparameter s1-s5 können hier verwendet werden; ihre namen: $SPEZIAL1 .. $SPEZIAL5 .
+#Alle Parameter mit ihrem Namen:
+#
+#        help | --help | -h)         HELP
+#        -k | --kinstall)            INSTALL
+#        -M | --Modinstall)          MODINSTALL
+#        -f | --force)               FORCE
+#        -C | --CLEAN)               CLEAN
+#        -L | --link)                LINK
+#        -m | --menu)                MENU
+#        -b | --build)               BUILD
+#        -c | --confcopy)            CONF
+#        -g | --graphic)             VGA
+#        -o | --ohne)                NODRV
+#        -O | --wirklichohne)        NODRV_MORE
+#        -r | --ram)                 RAM
+#        -v | --verbose)             VERBOSE
+#                        -s1)             SPEZIAL1
+#                        -s2)             SPEZIAL2
+#                        -s3)             SPEZIAL3
+#                        -s4)             SPEZIAL4
+#                        -s5)             SPEZIAL5
+#
+############################################################
+
+userhelp() #Grundstruktur nicht ändern!
+{
+#  echo -e "\ts1\t<beschreibung>"
+#  echo -e "\ts2\t<beschreibung>"
+#  echo -e "\ts3\t<beschreibung>"
+#  echo -e "\ts4\t<beschreibung>"
+#  echo -e "\ts5\t<beschreibung>"
+test
+}
+
+_userfunct() #Grundstruktur nicht ändern!
+{
+
+[[ "$1" == "begin" ]]&&{
+
+  ########################
+  # Funktionen, die VOR dem Kernelbau ausgeführt werden sollen, hier einfügen
+	test		 #
+  ########################
+
+
+}
+
+[[ "$1" == "drv" ]]&&{
+
+  ########################
+  # Funktionen, die bei dem Treiberbau mit ausgeführt werden sollen, hier einfügen
+        test		 #
+  ########################
+
+
+}
+
+[[ "$1" == "sub" ]]&&{
+
+  ########################
+  # Funktionen, die evtl. einzeln ausgeführt werden sollen, hier einfügen
+        test		 #
+  ########################
+
+
+}
+
+[[ "$1" == "end" ]]&&{
+
+  ########################
+  # Funktionen, die NACH dem Kernelbau ausgeführt werden sollen hier einfügen
+        test		 #
+  ########################
+
+
+}
+
+} # _userfunct
