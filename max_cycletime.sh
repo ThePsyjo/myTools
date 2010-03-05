@@ -32,6 +32,8 @@ doHelp()
 
 [[ $# -eq 1 ]] || { doHelp; eexit 1 "Argumentcount dies not match"; }
 [[ $(echo $1 | egrep -o "([0-9]{1,3}\.){3}[0-9]{1,3}") ]] || { doHelp; eexit 1 "Argument is not an IP"; }
+echo -n "checking host...  "
+ping -c3 $1 >/dev/null || eexit 0 "Host unreachable" && echo OK
 
 d_p() { ping -c1 $1 | sed -n '2p' | awk '{print $7}' | cut -d = -f 2; }
 
