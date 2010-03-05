@@ -17,9 +17,25 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.  #
 #########################################################################
 
+eexit()
+{
+	Ret=$1
+	shift
+	echo "$*"
+	exit ${Ret}
+}
+
+doHelp()
+{
+	echo -e "Usage: ./$0 <destination IP>"
+}
+
+[[ $# -eq 1 ]] || { doHelp; eexit 1 "Argumentcount dies not match"; }
+[[ $(echo $1 | egrep -o "([0-9]{1,3}\.){3}[0-9]{1,3}") ]] || { doHelp; eexit 1 "Argument is not an IP"; }
 
 d_p() { ping -c1 $1 | sed -n '2p' | awk '{print $7}' | cut -d = -f 2; }
 
+echo "Hit Ctrl+C to exit"
 while :
 do
 	val=$(d_p $1)
