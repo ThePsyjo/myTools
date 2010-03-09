@@ -38,6 +38,7 @@ ping -c3 $1 >/dev/null || eexit 0 "Host unreachable" && echo OK
 d_p() { ping -c1 $1 | sed -n '2p' | awk '{print $7}' | cut -d = -f 2; }
 
 echo "Hit Ctrl+C to exit"
+val_old=0
 while :
 do
 	val=$(d_p $1)
