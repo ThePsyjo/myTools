@@ -37,7 +37,7 @@ line="--------------------------------------------------------------------------
 
 while : ;
 do
-
+	[[ ! ${Data} ]] && { echo "Keine Daten vorhanden, beende."; exit 0; }
 	echo -e "zu ignorierende zeilen angeben, keine eingabe: ausfuehren\n${line}"
 	echo "${Data}" | sed -n "${sedStr}" | cat -n
 	echo "${line}"
@@ -54,13 +54,12 @@ do
 	unset toDel
 done
 
-[[ ! ${Data} ]] && exit 0
-
 echo -e "\nloesche folgende...\n"
 
 IFS=$'\n'
 for l in ${Data}
 do
 	echo "${l}" | sed -n "${sedStr}"
-	sed -i "$(grep -n "${l}" ${khFile} | awk -F: '{print $1}')d" ${khFile}
+#	echo "sed -i "$(grep -n "$(echo "${l}" | sed 's/\[/\\&/')" ${khFile} | awk -F: '{print $1}')d" ${khFile}"
+	sed -i "$(grep -n "$(echo "${l}" | sed 's/\[/\\&/')" ${khFile} | awk -F: '{print $1}')d" ${khFile}
 done
