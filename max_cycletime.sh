@@ -41,7 +41,7 @@ echo "Hit Ctrl+C to exit"
 while :
 do
 	val=$(d_p $1)
-	[[ "$val" < "$val_old" ]] && val=$val_old
+	[[ $(echo "$val < $val_old" | bc) -eq 1 ]] && val=$val_old
 	val_old=$val
 
 	[[ "$val" != "$last_echo" ]] && echo $val
