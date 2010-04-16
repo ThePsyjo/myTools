@@ -1,6 +1,6 @@
 #!/bin/bash
 #########################################################################
-# mac_cycletime.sh                                                      #
+# max_cycletime.sh                                                      #
 # Copyright (C) 2010  Psyjo                                             #
 #                                                                       #
 # This program is free software; you can redistribute it and/or modify  # 
@@ -42,8 +42,14 @@ val_old=0
 while :
 do
 	val=$(d_p $1)
-	[[ $(echo "$val < $val_old" | bc) -eq 1 ]] && val=$val_old
-	val_old=$val
+	if [[ ${val} ]]
+	then
+		[[ $(echo "${val} < ${val_old}" | bc) -eq 1 ]] && val=$val_old
+		val_old=$val
+	else
+		val_old=0
+		val="not reachable"
+	fi
 
 	[[ "$val" != "$last_echo" ]] && echo $val
 	last_echo=$val
