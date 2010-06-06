@@ -30,18 +30,19 @@ doHelp()
 	echo -e "Usage: ./$0 <destination IP>"
 }
 
-[[ $# -eq 1 ]] || { doHelp; eexit 1 "Argumentcount dies not match"; }
-[[ $(echo $1 | egrep -o "([0-9]{1,3}\.){3}[0-9]{1,3}") ]] || { doHelp; eexit 1 "Argument is not an IP"; }
+[[ $# -eq 1 ]] || { doHelp; eexit 1 "Argumentcount does not match"; }
+Ip=$(echo $1 | egrep -o "([0-9]{1,3}\.){3}[0-9]{1,3}")
+[[ ${Ip} ]] || { doHelp; eexit 1 "Argument is not an IP"; }
 echo -n "checking host...  "
-ping -c3 $1 >/dev/null || eexit 0 "Host unreachable" && echo OK
+ping -c3 $Ip >/dev/null || eexit 0 "Host unreachable" && echo OK
 
-d_p() { ping -c1 $1 | sed -n '2p' | awk '{print $7}' | cut -d = -f 2; }
+d_p() { ping -c1 $Ip | sed -n '2p' | awk '{print $7}' | cut -d = -f 2; }
 
 echo "Hit Ctrl+C to exit"
 val_old=0
 while :
 do
-	val=$(d_p $1)
+	val=$(d_p)
 	if [[ ${val} ]]
 	then
 		[[ $(echo "${val} < ${val_old}" | bc) -eq 1 ]] && val=$val_old
