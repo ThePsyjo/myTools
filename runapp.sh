@@ -60,14 +60,14 @@ doexec()
 	then
 		echo "logging to ${Log}"
 		echo "pwd > $(pwd)"
-		echo "exec > ${WineCmd} \"$*\" \"${Exeargs}\""
-		${WineCmd} $* ${Exeargs} | tee ${Log}
+		echo "exec > ${WineCmd} \"${Binfile}\" \"${Exeargs}\""
+		${WineCmd} "${Binfile}" ${Exeargs} | tee ${Log}
 	else
-		${WineCmd} $* ${Exeargs} &> ${Log} 
+		${WineCmd} "${Binfile}" ${Exeargs} 2>${Log}
 	fi
 }
 
-[[ "${Setupfile}" ]] && { jbegin "starting install"; doexec ${Setupfile}; jend; exit; }; 
+[[ "${Setupfile}" ]] && { jbegin "starting install"; Binfile="${Setupfile}"; doexec; jend; exit; };
 
 if [[ ${Conf} || ${Reg} || ${Other} ]]
 then
