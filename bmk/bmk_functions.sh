@@ -1,7 +1,7 @@
 # Copyright 2006 Psyjo©
 # Distributed under the terms of the GNU General Public License v3
 #:begin_version
-#Version 1.2.5
+#Version 1.2.5-1
 #:end_version
 
 #:begin_jpara
@@ -77,7 +77,7 @@ klink()  # verlinkt den letzten String (größter) nach linux
 {
   cd ../
   [[ $CONF ]] && cp $LINPATH/.config ./
-  FILE=`ls -dx1 $LINPATH* | sort -n -t - -k 4.2,4.3 | sort -t - -k 2 | tail -n 1`
+  FILE=$(ls -dx1 /usr/src/* | sort -t r -k 4 -n | sed -n '$p')
 
   inline "$GOOD$LINPATH -> $FILE$NORMAL"
     rm ${LINPATH}
