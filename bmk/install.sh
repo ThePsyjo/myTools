@@ -1,6 +1,6 @@
 #!/bin/bash
 #:begin_version
-#1.2
+#1.2-1
 #:end_version
  [[ ! -e psytools.sh ]] && echo -e "\tkonnte psytools nicht finden!\n" && exit
    source psytools.sh || exit
@@ -10,15 +10,18 @@
  [[ ! -r bmk.sh ]] && jerror -e "\n$BAD\tbmk.sh für Installation benötigt!$NORMAL\n" && exit
 # [[ ! -r bmk.conf ]] && jerror -e "\n$BAD\tbmk.conf für Installation benötigt!$NORMAL\n" && exit
 
-#:begin_jpara
-# -f | --force: FORCE
-# -c | --conf:CONF
-# -jrd:Jrun_Debug
-# -v:VERBOSE
-# -u | --uninstall : UNINST
-#:end_jpara
+#:begin_args
+# -f | --force : FORCE # force install
+# -c | --conf : CONF # install config
+# -jrd : Jrun_Debug # debug output
+# -v : VERBOSE # run verbose
+# -u | --uninstall : UNINST # uninstall bmk
+# -h | --help : Help # show this
+#:end_args
 
-jtestpara $0 "$@"
+getArgs $0 "$@"
+
+[[ ${Help} ]] && { genarghelp $0; exit; }
 
 if [[ $UNINST ]]
 then
