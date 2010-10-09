@@ -3,11 +3,11 @@
 #1.3
 #:end_version
 #:begin_args
-# -w | --web	 : WEB		# webupdate
-# -l | --local	 : LOCAL	# nur lokal kopieren
-# -v | --verbose : VERBOSE	# mehr Ausgaben
-# -i | --install : Install	# bmk installieren
-# -h | --help	: Help # diese Hilfe anzeigen
+# -w | --web : WEB # webupdate
+# -l | --local : LOCAL # nur lokal kopieren
+# -v | --verbose : VERBOSE # mehr Ausgaben
+# -i | --install : Install # bmk installieren
+# -h | --help : Help # diese Hilfe anzeigen
 #:end_args
 Src="http://github.com/ThePsyjo/myTools/raw/master"
 . /usr/lib/psytools.sh || . psytools.sh || {
@@ -19,9 +19,10 @@ getArgs $0 "$@"
 [[ ! ${VERBOSE} ]] && OPTS="-q"
 [[ ${WEB} ]]&&{
   jbegin "Daten herunterladen"
-    for File in psytools.sh bmk/bmk.sh bmk/bmk_functions.sh bmk/install.sh bmk/bmk.conf.example bmk/userfuncts.sh.vanilla
+    wget ${OPTS} ${Src}/psytools.sh -O ./psytools.sh
+    for File in bmk.sh bmk_functions.sh install.sh bmk.conf.example userfuncts.sh.vanilla
     do
-	    wget ${OPTS} ${Src}/${File} -O ./${File}
+	    wget ${OPTS} ${Src}/bmk/${File} -O ./${File}
     done
   jend
     [[ ${UID} == 0 ]] && [[ ${Install} ]] && {
