@@ -18,7 +18,7 @@ do
         echo "$l"
         if [[ "$(echo $l | grep "^extents")" ]]
         then
-                let $(echo "$l" | awk '{print "from"$3"to"$5}')++
+                let $(echo "$l" | sed -ne 's/.*: *\([0-9]*\).*: *\([0-9]*\).*/from\1to\2/p')++
                 dspl
         else
                 continue
