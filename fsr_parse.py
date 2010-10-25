@@ -34,11 +34,12 @@ def dspl():
 	global oldmap
 	global smap
 	genSmap()
-	if oldmap == map(operator.itemgetter(0), smap):
+	newmap = map(operator.itemgetter(0), smap)
+	if oldmap == newmap:
 		os.system('tput cup 0 0')
 	else:
 		os.system('clear')
-	oldmap = map(operator.itemgetter(0), smap)
+	oldmap = newmap
 	cnt = 0
 	for k, v in smap:
 		cnt += 1
