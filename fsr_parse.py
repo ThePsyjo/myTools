@@ -47,22 +47,25 @@ def dspl():
 		print k, '\t', v
 
 def usage():
-	print 'usage:\n', sys.argv[0], '[-h|--help] [-p|--print]'
+	print 'usage:\n', sys.argv[0], '[-h|--help] [-p|--print] [-s|--skip-summary]'
 
 try:
-	opts, args = getopt.getopt(sys.argv[1:], "ph", ["print", "help"])
+	opts, args = getopt.getopt(sys.argv[1:], "hps", ["print", "help", "skip-summary"])
 except getopt.GetoptError, err:
 	print str(err) # will print something like "option -a not recognized"
 	usage()
 	sys.exit(2)
 help = False
 printout = False
+summary = True
 for o, a in opts:
 	if o in ("-h", "--help"):
 		usage()
 		sys.exit()
 	elif o in ("-p", "--print"):
 		printout = True
+	elif o in ("-s", "--skip-summary"):
+		summary = False
 	else:
 		assert False, "unhandled option"
 
@@ -86,10 +89,11 @@ while running == 1:
 		if printout:
 			dspl()
 
-os.system('clear')
-print '=' * 47
-print '=' * 20, ' sum ', '=' * 20
-print '=' * 47
-genSmap()
-for k, v in smap:
-	print k, '\t', v
+if summary:
+	os.system('clear')
+	print '=' * 47
+	print '=' * 20, ' sum ', '=' * 20
+	print '=' * 47
+	genSmap()
+	for k, v in smap:
+		print k, '\t', v
