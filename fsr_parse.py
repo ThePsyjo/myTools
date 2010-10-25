@@ -6,6 +6,7 @@ import re
 import operator
 import os
 import signal
+import getopt
 
 vmap = {}
 smap = []
@@ -45,12 +46,34 @@ def dspl():
 			break
 		print k, '\t', v
 
+def usage():
+	print 'usage:\n', sys.argv[0], '[-h|--help] [-p|--print]'
+
+try:
+	opts, args = getopt.getopt(sys.argv[1:], "ph", ["print", "help"])
+except getopt.GetoptError, err:
+	print str(err) # will print something like "option -a not recognized"
+	usage()
+	sys.exit(2)
+help = False
+printout = False
+for o, a in opts:
+	if o in ("-h", "--help"):
+		usage()
+		sys.exit()
+	elif o in ("-p", "--print"):
+		printout = True
+	else:
+		assert False, "unhandled option"
+
+
 while running == 1:
 	line = sys.stdin.readline()
 	if len(line) == 0:
 		break
 	else:
-		print line,
+		if printout:
+			print line,
 		if linePattern.search(line):
 			m = valuePattern.match(line)
 			value = float(m.group(1) + '.' + m.group(2))
@@ -60,7 +83,8 @@ while running == 1:
 				vmap[value] = 1
 		else:
 			continue
-		dspl()
+		if printout:
+			dspl()
 
 os.system('clear')
 print '=' * 47
