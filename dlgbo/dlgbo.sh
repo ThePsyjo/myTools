@@ -20,6 +20,7 @@
 #-h|--help : Help # show this
 #-o+|--outdir+ : Outprefix # output directory
 #-b+|--begin+ : cnt # start with <begin>
+#-m+|--max+ : MaxCnt # donwnload up to this quote
 #:end_args
 . /usr/lib/psytools.sh
 getArgs $0 "$@"
@@ -28,41 +29,14 @@ tt dos2unix,iconv,wget || help=1
 [[ ! ${Outprefix} ]] && Outprefix="."
 [[ ! ${cnt} ]] && cnt="2"
 
-extract()
-{
-  dos2unix -q "$1"
+[[ ! -e ${Outprefix} ]] && mkdir -pv ${Outprefix}
 
-  iconv -f utf-8 -t latin1 "$1" |\
-	sed -n '/<div class="zitat">/,/<\/div>/p' |\
-	head -n -1 | tail -n +2 |\
-	sed 	's/<[ a-z="_]*>//g;
-		s/<\/span>//g;
-		s/&lt;/</g;
-		s/&gt;/>/g;
-		s/^\t*//g;
-		s/^ *//g;
-		s/^\t*//g;
-		s/^ *//g;
-		s/^$//g;' > /tmp/$$
-
-
-  mv /tmp/$$ "$1"
-}
-
-while true
+while [[ ${cnt} -le ${MaxCnt} ]]
 do
 	jbegin "processing #${cnt}"
-	  wget -q http://german-bash.org/${cnt} -O "${Outprefix}/${cnt}"
-	  extract "${Outprefix}/${cnt}"
-	  if [[ $(du -b "${Outprefix}/${cnt}"|cut -f 1) -eq 0 ]]
-	  then rm "${Outprefix}/${cnt}"; false
-	  else true
-	  fi
+	  Data="$(curl -s http://german-bash.org/${cnt})"
+	  [[ $( printf "%s" "${Data}" | grep 'span class="quote_zeile"') ]] && printf "%s" "${Data}" > "${Outprefix}/${cnt}" || false
 	jend
-#	  [[ $(du -b "${Outprefix}/${cnt}"|cut -f 1) -eq 0 ]] && {
-#	  	tab; jwarn "file is empty"
-#		rm "${Outprefix}/${cnt}"
-#	  }
 	  
 	let "cnt++"
 done
