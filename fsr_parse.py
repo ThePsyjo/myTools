@@ -27,8 +27,7 @@ signal.signal(15, exitHandler)
 def genSmap():
 	global oldmap
 	global smap
-	smap = sorted(vmap.iteritems(), reverse=True)
-	smap = sorted(smap, key=operator.itemgetter(1), reverse=True)
+	smap = sorted(sorted(vmap.iteritems(), reverse=True), key=operator.itemgetter(1), reverse=True)
 
 def dspl():
 	global oldmap
@@ -69,7 +68,6 @@ for o, a in opts:
 		summary = False
 	else:
 		assert False, "unhandled option"
-
 
 while running == 1:
 	line = sys.stdin.readline()
