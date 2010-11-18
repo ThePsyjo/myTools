@@ -1,4 +1,4 @@
-#!/bin/bash
+# -*- coding: utf-8 -*-
 #########################################################################
 # process.py                                                            #
 # Copyright (C) 2010  Psyjo                                             #
@@ -17,7 +17,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.  #
 #########################################################################
 
-# -*- coding: utf-8 -*-
 
 import re
 import os
@@ -55,6 +54,7 @@ for o, a in opts:
 if not input:
 	#input = "./raw/"
 	print 'input-dir needs to be set !'
+	usage()
 	sys.exit(1)
 if not output:
 	output = "./processed/"
@@ -87,6 +87,7 @@ _latex_special_chars = {
 '³' : u'$^3$',
 '²' : u'$^2$',
 'Â' : '',
+'Ã' : '',
 #'¤' : u'\\geneuro{}',
 }
 
