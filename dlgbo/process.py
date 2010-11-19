@@ -83,11 +83,11 @@ _latex_special_chars = {
 '^':  u'\\textasciicircum{}',
 '`':  u'{}`',   # avoid ?` and !`
 '\n': u'\\\\',
-'¥' : u'\\textyen{}',
-'³' : u'$^3$',
-'²' : u'$^2$',
-'Â' : '',
-'Ã' : '',
+#'¥' : u'\\textyen{}',
+#'³' : u'$^3$',
+#'²' : u'$^2$',
+#'Â ' : ' ',
+#'Ã ' : ' ',
 #'¤' : u'\\geneuro{}',
 }
 
@@ -156,6 +156,7 @@ for infile in filelist:
 	if quotecount >= 500:
 		if not datafile.closed:
 			datafile.close()
+			os.system("sed -i -e 's/Â­//g' -e 's/Â / /g' -e 's/Ã / /g' " + datadir + '/all_data' + str(filecount) + '.tex') 
 		filecount += 1
 
 		datafile = open( datadir + '/all_data' + str(filecount) + '.tex', 'w+' )
@@ -168,5 +169,9 @@ for infile in filelist:
 	sys.stdout.flush()
 	datafile.write( '\\gboquote{' + infile + '}\n{\n' + open(output + '/' + infile, "rb").read() + '\n}\n' )
 	quotecount += 1
+
+if not datafile.closed:
+	datafile.close()
+	os.system("sed -i -e 's/Â­//g' -e 's/Â / /g' -e 's/Ã / /g' " + datadir + '/all_data' + str(filecount) + '.tex') 
 
 print
