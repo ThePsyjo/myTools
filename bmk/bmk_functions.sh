@@ -77,7 +77,7 @@ klink()  # verlinkt den letzten String (größter) nach linux
 {
   cd ../
   [[ $CONF ]] && cp $LINPATH/.config ./
-  FILE=$(ls -dx1 /usr/src/* | sort -t r -k 4 -n | sed -n '$p')
+  FILE=$(ls -dx1 /usr/src/* | grep "$(ls -dx1 /usr/src/*  | sed -n 's/.*-\(2\.6\.[0-9]*\)-.*-r\([0-9]*\)/\1.\2/p' | sort  -n | sed -n '$s/\(2\.6\.[0-9]*\)\.\([0-9]*\)/\.*\1\.*\2/p')")
 
   inline "$GOOD$LINPATH -> $FILE$NORMAL"
     rm ${LINPATH}
