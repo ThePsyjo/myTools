@@ -2,7 +2,7 @@
 # Copyright 2006 Psyjo©
 # Distributed under the terms of the GNU General Public License v3
 #:begin_version
-#Version 1.2.2-2
+#Version 1.2.2-3
 #:end_version
 ############################## tests ########################################
 function checkvars()
@@ -25,7 +25,8 @@ function pretest1()
 
 if [[ -r /usr/lib/psytools.sh ]]
 then
-  source /usr/lib/psytools.sh
+  . /usr/lib/psytools.sh selftest || exit
+  tt eselect || exit
   pretest1
   jset_time full
 else

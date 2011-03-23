@@ -1,7 +1,7 @@
 # Copyright 2006 Psyjo©
 # Distributed under the terms of the GNU General Public License v3
 #:begin_version
-#Version 1.2.5-1
+#Version 1.2.6
 #:end_version
 
 #:begin_jpara
@@ -77,12 +77,14 @@ klink()  # verlinkt den letzten String (größter) nach linux
 {
   cd ../
   [[ $CONF ]] && cp $LINPATH/.config ./
-  FILE=$(ls -dx1 /usr/src/* | grep 2.6.$(ls -dx1 /usr/src/*  | sort -t- -k 2 | sed -n '$s/.*2\.6\.\([0-9]*\)-.*/\1/p') | sort -rn | sed -n '$p')
+#  FILE=$(ls -dx1 /usr/src/* | grep 2.6.$(ls -dx1 /usr/src/*  | sort -t- -k 2 | sed -n '$s/.*2\.6\.\([0-9]*\)-.*/\1/p') | sort -rn | sed -n '$p')
+  eselect kernel set $(eselect kernel list | sed -n '$s/^ *\[\([0-9]\+\)\].*/\1/p') || exit
+  FILE="$(eselect kernel list | sed -n '$s/.*\] *\([^ ]\+\).*/\1/p')"
 
-  inline "$GOOD$LINPATH -> $FILE$NORMAL"
-    rm ${LINPATH}
-    ln -s $FILE $LINPATH
-  jend
+#  inline "$GOOD$LINPATH -> $FILE$NORMAL"
+#    rm ${LINPATH}
+#    ln -s $FILE $LINPATH
+#  jend
 
   if [ $CONF ];then
     inline "$.conf -> $FILE/.conf"
