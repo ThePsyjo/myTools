@@ -92,49 +92,47 @@ qwhere += (' AND status != 200 ' if qwhere else ' WHERE status != 200 ') if pars
 limit = (' LIMIT ' + parsed.resultLimit) if parsed.resultLimit else ''
 
 class Table:
-	def __init__(self,title,headers,rows):
-	self.title=title
-	self.headers=headers
-	self.rows=rows
-	self.nrows=len(self.rows)
-	self.fieldlen=[]
+        def __init__(self,title,headers,rows):
+                self.title=title
+                self.headers=headers
+                self.rows=rows
+                self.nrows=len(self.rows)
+                self.fieldlen=[]
 
-	ncols=len(headers)
+                ncols=len(headers)
 
-	for i in range(ncols):
-	    max=0
-	    for j in rows:
-		if len(str(j[i]))>max: max=len(str(j[i]))
-	    self.fieldlen.append(max)
+                for i in range(ncols):
+                        max=0
+                        for j in rows:
+                                if len(str(j[i]))>max: max=len(str(j[i]))
+                        self.fieldlen.append(max)
 
-	for i in range(len(headers)):
-	    if len(str(headers[i]))>self.fieldlen[i]: self.fieldlen[i]=len(str(headers[i]))
+                for i in range(len(headers)):
+                        if len(str(headers[i]))>self.fieldlen[i]: self.fieldlen[i]=len(str(headers[i]))
 
+                self.width=sum(self.fieldlen)+(ncols-1)*3+4
 
-	self.width=sum(self.fieldlen)+(ncols-1)*3+4
+        def __str__(self):
+                bar = '+'
+                for i in range(len(self.headers)):
+                        bar+='-'*(self.fieldlen[i]+2)
+                        bar+='+'
+                title="| "+self.title+" "*(self.width-3-(len(self.title)))+"|"
+                out=['+'+'-'*(self.width-2)+'+',title,bar]
+                header=""
+                for i in range(len(self.headers)):
+                        header+="| %s" %(str(self.headers[i])) +" "*(self.fieldlen[i]-len(str(self.headers[i])))+" "
+                header+="|"
+                out.append(header)
+                out.append(bar)
+                for i in self.rows:
+                        line=""
+                        for j in range(len(i)):
+                                line+="| %s" %(str(i[j])) +" "*(self.fieldlen[j]-len(str(i[j])))+" "
+                        out.append(line+"|")
 
-    def __str__(self):
-	bar = '+'
-	    for i in range(len(self.headers)):
-	    bar+='-'*(self.fieldlen[i]+2)
-	    bar+='+'
-
-	title="| "+self.title+" "*(self.width-3-(len(self.title)))+"|"
-	out=['+'+'-'*(self.width-2)+'+',title,bar]
-	header=""
-	for i in range(len(self.headers)):
-	    header+="| %s" %(str(self.headers[i])) +" "*(self.fieldlen[i]-len(str(self.headers[i])))+" "
-	header+="|"
-	out.append(header)
-	out.append(bar)
-	for i in self.rows:
-	    line=""
-	    for j in range(len(i)):
-		line+="| %s" %(str(i[j])) +" "*(self.fieldlen[j]-len(str(i[j])))+" "
-	    out.append(line+"|")
-
-	out.append(bar)
-	return "\n".join(out)
+                out.append(bar)
+                return "\n".join(out)
 
 def mkTitle(c):
 	return [d[0] for d in c.description]
