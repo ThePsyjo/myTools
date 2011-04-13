@@ -35,7 +35,7 @@ parser.add_argument('-R', '--returncode-stats', action='append_const', const='st
 parser.add_argument('-C', '--content', action='append_const', const='content', default=[], dest='Actions', help='content stats')
 parser.add_argument('-S', '--hoststat', action='append_const', const='hoststat', default=[], dest='Actions', help='host stats')
 parser.add_argument('-l', '--limit', action='store', dest='resultLimit', metavar='N', help='limit to N results')
-parser.add_argument('-T', '--top', action='append', choices='t to ti v d f all'.split(), default=[], dest='top', help='generate top x (-l) for each (traffic = \'t\', traffic out = \'to\', traffic in = \'ti\', views = \'v\', delay = \'d\', files = \'f\' or all trailing = \'all\'
+parser.add_argument('-T', '--top', action='append', choices='t to ti v d f all'.split(), default=[], dest='top', help='generate top x (-l) for each (traffic = \'t\', traffic out = \'to\', traffic in = \'ti\', views = \'v\', delay = \'d\', files = \'f\' or all trailing = \'all\'')
 
 parser.add_argument('--SQL', action='store', dest='query', metavar='\'<query>\'', help='execute \'<query>\'')
 
