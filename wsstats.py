@@ -1,7 +1,7 @@
 ##################
 # wsstats.py     #
 #                #
-# 2008 by Psyjo© #
+# 2011 by Psyjo© #
 ##################
 # Distributed under the terms of the GNU General Public License v2
 """
