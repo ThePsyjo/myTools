@@ -74,8 +74,8 @@ while running == 1:
 	if len(line) == 0:
 		break
 	else:
-		if printout:
-			print line,
+#		if printout:
+#			print line,
 		if linePattern.search(line):
 			m = valuePattern.match(line)
 			value = float(m.group(1) + '.' + m.group(2))
