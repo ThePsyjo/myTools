@@ -1,8 +1,8 @@
-##################
-# wsstats.py     #
-#                #
-# 2011 by Psyjo© #
-##################
+######################
+# wsstats.py         #
+#                    #
+# 2011 (c) by Psyjo  #
+######################
 # Distributed under the terms of the GNU General Public License v2
 """
 CREATE TABLE `apachelog` (
@@ -48,6 +48,7 @@ parser.add_argument('--SQL', action='store', dest='query', metavar='\'<query>\''
 dt_group = parser.add_mutually_exclusive_group()
 dt_group.add_argument('-f', '--from', action='store', dest='time_from', metavar='<datetime>', help='results beginning this time ("Y-m-d H:M:S")')
 dt_group.add_argument('-j', '--today', action='store_const', dest='time_from', const=date.today().isoformat()+' 00:00:00', help='Alias for "-f \'<today> 00:00:00\'"')
+dt_group.add_argument('-L', '--last', action='store', dest='time_last', metavar='<time>=0:10:0', help='results in the last <time> (H:M:S)')
 parser.add_argument('-u', '--until', action='store', dest='time_until', metavar='<datetime>', help='results until this time ("Y-m-d H:M:S")')
 
 parser.add_argument('-H', '--host', action='store', dest='host', metavar='hostname', help='results relating to hostname')
@@ -78,15 +79,18 @@ parsed.top = set(parsed.top)
 if 'all' in parsed.top:
 	parsed.top = 'to ti v d f'.split()
 
+def tpart(f): return int(parsed.time_last.split(':')[f])
 try:
-	from_dt  = datetime.strptime(parsed.time_from,  "%Y-%m-%d %H:%M:%S").isoformat(' ') if parsed.time_from  else ''
+	from_dt = ''
+	from_dt += (datetime.now() - timedelta(hours=tpart(0), minutes=tpart(1), seconds=tpart(1))).strftime('%Y-%m-%d %H:%M:%S') if parsed.time_last  else ''
+	from_dt += datetime.strptime(parsed.time_from,  "%Y-%m-%d %H:%M:%S").isoformat(' ') if parsed.time_from  else ''
 	until_dt = datetime.strptime(parsed.time_until, "%Y-%m-%d %H:%M:%S").isoformat(' ') if parsed.time_until else ''
 except ValueError as msg:
 	print (msg)
 	exit()
 
 qwhere = ''
-qwhere += (' AND datetime >= \'' + from_dt  + '\'' if qwhere else ' WHERE datetime >= \'' + from_dt  + '\'') if parsed.time_from  else ''
+qwhere += (' AND datetime >= \'' + from_dt  + '\'' if qwhere else ' WHERE datetime >= \'' + from_dt  + '\'') if from_dt  else ''
 qwhere += (' AND datetime <= \'' + until_dt + '\'' if qwhere else ' WHERE datetime <= \'' + until_dt + '\'') if parsed.time_until else ''
 qwhere += (' AND site LIKE \'' + parsed.site + '%\'' if qwhere else ' WHERE site LIKE \'' + parsed.site + '%\'') if parsed.site else ''
 qwhere += (' AND host LIKE \'' + parsed.host + '%\'' if qwhere else ' WHERE host LIKE \'' + parsed.host + '%\'') if parsed.host else ''
@@ -96,6 +100,9 @@ qwhere += (' AND status = 200 ' if qwhere else ' WHERE status = 200 ') if parsed
 qwhere += (' AND status != 200 ' if qwhere else ' WHERE status != 200 ') if parsed.notok200 else ''
 
 limit = (' LIMIT ' + parsed.resultLimit) if parsed.resultLimit else ''
+
+#print qwhere
+#exit()
 
 class Table:
 	def __init__(self,title,headers,rows):
