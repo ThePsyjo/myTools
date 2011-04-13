@@ -114,9 +114,13 @@ class Table:
 	self.width=sum(self.fieldlen)+(ncols-1)*3+4
 
     def __str__(self):
-	bar="-"*self.width
+	bar = '+'
+	    for i in range(len(self.headers)):
+	    bar+='-'*(self.fieldlen[i]+2)
+	    bar+='+'
+
 	title="| "+self.title+" "*(self.width-3-(len(self.title)))+"|"
-	out=[bar,title,bar]
+	out=['+'+'-'*(self.width-2)+'+',title,bar]
 	header=""
 	for i in range(len(self.headers)):
 	    header+="| %s" %(str(self.headers[i])) +" "*(self.fieldlen[i]-len(str(self.headers[i])))+" "
