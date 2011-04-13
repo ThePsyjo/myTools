@@ -1,3 +1,9 @@
+##################
+# wsstats.py     #
+#                #
+# 2008 by Psyjo© #
+##################
+# Distributed under the terms of the GNU General Public License v2
 """
 CREATE TABLE `apachelog` (
   `datetime` datetime DEFAULT NULL,
