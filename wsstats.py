@@ -201,20 +201,20 @@ except Exception as msg:
 
 for Action in parsed.Actions:
 	if Action is 'traffic':
-		cursor.execute('SELECT SUM(bytes_sent) outbound, SUM(bytes_received) inbound FROM apachelog ' + qwhere)
+		cursor.execute('SELECT SUM(bytes_sent) outbound, SUM(bytes_received) inbound FROM ' + config.get('DB', 'table') + ' ' + qwhere)
 		Data = cursor.fetchall()
 		printTable('Traffic Stats', mkTitle(cursor), mkData(Data,[0,1], 'i'))
 
 	if Action is 'status':
-		cursor.execute('SELECT status,COUNT(status) cnt,COUNT(status) alias FROM apachelog ' + qwhere + ' GROUP BY status ORDER BY cnt DESC' + limit)
+		cursor.execute('SELECT status,COUNT(status) cnt,COUNT(status) alias FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY status ORDER BY cnt DESC' + limit)
 		printTable('Returncode Stats', mkTitle(cursor), mkData(cursor.fetchall(), [2], 'n'))
 
 	if Action is 'content':
-		cursor.execute('SELECT content_type,COUNT(content_type) cnt,COUNT(content_type) alias FROM apachelog ' + qwhere + ' GROUP BY content_type ORDER BY cnt DESC' + limit)
+		cursor.execute('SELECT content_type,COUNT(content_type) cnt,COUNT(content_type) alias FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY content_type ORDER BY cnt DESC' + limit)
 		printTable('Content Stats', mkTitle(cursor), mkData(cursor.fetchall(), [2], 'n'))
 
 	if Action is 'hoststat':
-		cursor.execute('SELECT host,COUNT(host) cnt, COUNT(host) alias FROM apachelog ' + qwhere + ' GROUP BY host ORDER BY cnt DESC' + limit)
+		cursor.execute('SELECT host,COUNT(host) cnt, COUNT(host) alias FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY host ORDER BY cnt DESC' + limit)
 		printTable('Host Stats', mkTitle(cursor), mkData(cursor.fetchall(), [2], 'n'))
 
 	if Action is 'query':
@@ -232,23 +232,23 @@ for Action in parsed.Actions:
 
 		for top in parsed.top:
 			if top == 't' or top == 'to':
-				cursor.execute('SELECT site,SUM(bytes_sent) data FROM apachelog ' + qwhere + ' GROUP BY site ORDER BY data DESC' + toplimit)
+				cursor.execute('SELECT site,SUM(bytes_sent) data FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY site ORDER BY data DESC' + toplimit)
 				printTable(mkTopCaption('Traffic Outbound'), mkTitle(cursor), mkData(cursor.fetchall(), [1], 'i'))
 
 			if top == 'ti':
-				cursor.execute('SELECT site,SUM(bytes_received) data FROM apachelog ' + qwhere + ' GROUP BY site ORDER BY data DESC' + toplimit)
+				cursor.execute('SELECT site,SUM(bytes_received) data FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY site ORDER BY data DESC' + toplimit)
 				printTable(mkTopCaption('Traffic Inbound'), mkTitle(cursor), mkData(cursor.fetchall(), [1], 'i'))
 
 			if top == 'v':
-				cursor.execute('SELECT site,COUNT(site) cnt,COUNT(site) alias FROM apachelog ' + qwhere + ' GROUP BY site ORDER BY cnt DESC' + toplimit)
+				cursor.execute('SELECT site,COUNT(site) cnt,COUNT(site) alias FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY site ORDER BY cnt DESC' + toplimit)
 				printTable(mkTopCaption('Views'), mkTitle(cursor), mkData(cursor.fetchall(), [2], 'n'))
 
 			if top == 'd':
-				cursor.execute('SELECT site,SUM(delay) delay FROM apachelog ' + qwhere + ' GROUP BY site ORDER BY delay DESC' + toplimit)
+				cursor.execute('SELECT site,SUM(delay) delay FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY site ORDER BY delay DESC' + toplimit)
 				printTable(mkTopCaption('Time'), mkTitle(cursor), mkData(cursor.fetchall(), [1], 'time'))
 
 			if top == 'f':
-				cursor.execute('SELECT site,url,COUNT(site) cnt,COUNT(site) alias FROM apachelog ' + qwhere + ' GROUP BY url ORDER BY cnt DESC' + toplimit)
+				cursor.execute('SELECT site,url,COUNT(site) cnt,COUNT(site) alias FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY url ORDER BY cnt DESC' + toplimit)
 				printTable(mkTopCaption('Files'), mkTitle(cursor), mkData(cursor.fetchall(), [3], 'n'))
 cursor.close()
 conn.close()
