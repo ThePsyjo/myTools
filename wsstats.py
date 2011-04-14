@@ -82,7 +82,7 @@ if 'all' in parsed.top:
 def tpart(f): return int(parsed.time_last.split(':')[f])
 try:
 	from_dt = ''
-	from_dt += (datetime.now() - timedelta(hours=tpart(0), minutes=tpart(1), seconds=tpart(1))).strftime('%Y-%m-%d %H:%M:%S') if parsed.time_last  else ''
+	from_dt += (datetime.now() - timedelta(hours=tpart(0), minutes=tpart(1), seconds=tpart(2))).strftime('%Y-%m-%d %H:%M:%S') if parsed.time_last  else ''
 	from_dt += datetime.strptime(parsed.time_from,  "%Y-%m-%d %H:%M:%S").isoformat(' ') if parsed.time_from  else ''
 	until_dt = datetime.strptime(parsed.time_until, "%Y-%m-%d %H:%M:%S").isoformat(' ') if parsed.time_until else ''
 except ValueError as msg:
