@@ -25,7 +25,7 @@ CREATE TABLE `apachelog` (
   KEY `site` (`site`),
   KEY `host` (`host`),
   KEY `datetime` (`datetime`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
 PARTITION BY RANGE (TO_SECONDS(datetime))
 (
 PARTITION p99999999 VALUES LESS THAN MAXVALUE
