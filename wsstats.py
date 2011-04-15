@@ -38,37 +38,42 @@ INSERT INTO apachelog (datetime, filename, requestmethod, remote_ip, remote_user
 	VALUES ('%{%Y-%m-%d %H:%M:%S}t', '%f', '%m', '%a', '%u', '%{Host}i', '%v', '%U%q', '%s', '%B', '%I', '%D', '%{Referer}i', '%{Content-Type}o');
 """
 
-import ConfigParser, os, MySQLdb, argparse, sys, decimal
+import ConfigParser, os, MySQLdb, argparse, sys
 from datetime import datetime, timedelta, date
 
 parser = argparse.ArgumentParser(description='Extract stats from webserverlogs')
 
-parser.add_argument('-t', '--traffic', action='append_const', const='traffic', default=[], dest='Actions', help='show incomming and outgoing traffic')
-parser.add_argument('-R', '--returncode-stats', action='append_const', const='status', default=[], dest='Actions', help='count returncodes')
-parser.add_argument('-C', '--content', action='append_const', const='content', default=[], dest='Actions', help='content stats')
-parser.add_argument('-S', '--hoststat', action='append_const', const='hoststat', default=[], dest='Actions', help='host stats')
-parser.add_argument('-l', '--limit', action='store', dest='resultLimit', metavar='N', help='limit to N results')
-parser.add_argument('-T', '--top', action='append', choices='t to ti v d f all'.split(), default=[], dest='top', help='generate top x (-l) for each (traffic = \'t\', traffic out = \'to\', traffic in = \'ti\', views = \'v\', delay = \'d\', files = \'f\' or all trailing = \'all\'')
+actionParser = parser.add_argument_group(title='Actions', description='At least one shouls be activated')
 
-parser.add_argument('--SQL', action='store', dest='query', metavar='\'<query>\'', help='execute \'<query>\'')
+actionParser.add_argument('-t', '--traffic', action='append_const', const='traffic', default=[], dest='Actions', help='show incomming and outgoing traffic')
+actionParser.add_argument('-R', '--returncode-stats', action='append_const', const='status', default=[], dest='Actions', help='count returncodes')
+actionParser.add_argument('-C', '--content', action='append_const', const='content', default=[], dest='Actions', help='content stats')
+actionParser.add_argument('-S', '--hoststat', action='append_const', const='hoststat', default=[], dest='Actions', help='host stats')
+actionParser.add_argument('-T', '--top', action='append', choices='t to ti v d f all'.split(), default=[], dest='top', help='generate top 10 (-l to modify) for each (traffic out = \'to\' = \'t\', traffic in = \'ti\', views = \'v\', delay = \'d\', files = \'f\' or all trailing = \'all\'')
 
-dt_group = parser.add_mutually_exclusive_group()
+limitParser = parser.add_argument_group(title='Limiters', description='Limit Database search to the given limits')
+
+dt_group = limitParser.add_mutually_exclusive_group()
 dt_group.add_argument('-f', '--from', action='store', dest='time_from', metavar='<datetime>', help='results beginning this time ("Y-m-d H:M:S")')
 dt_group.add_argument('-j', '--today', action='store_const', dest='time_from', const=date.today().isoformat()+' 00:00:00', help='Alias for "-f \'<today> 00:00:00\'"')
-dt_group.add_argument('-L', '--last', action='store', dest='time_last', metavar='<time>=0:10:0', help='results in the last <time> (H:M:S)')
-parser.add_argument('-u', '--until', action='store', dest='time_until', metavar='<datetime>', help='results until this time ("Y-m-d H:M:S")')
+dt_group.add_argument('-L', '--last', action='store', dest='time_last', metavar='<time>', help='results in the last <time> (H:M:S)')
+limitParser.add_argument('-u', '--until', action='store', dest='time_until', metavar='<datetime>', help='results until this time ("Y-m-d H:M:S")')
 
-parser.add_argument('-H', '--host', action='store', dest='host', metavar='hostname', help='results relating to hostname')
-parser.add_argument('-s', '--site', action='store', dest='site', metavar='sitename', help='results relating to sitename')
-parser.add_argument('-i', '--ip', action='store', dest='ip', metavar='remote-ip', help='results relating to remote-ip')
+limitParser.add_argument('-l', '--limit', action='store', dest='resultLimit', metavar='N', help='limit to N results')
+limitParser.add_argument('-H', '--host', action='store', dest='host', metavar='hostname', help='results relating to hostname')
+limitParser.add_argument('-s', '--site', action='store', dest='site', metavar='sitename', help='results relating to sitename')
+limitParser.add_argument('-i', '--ip', action='store', dest='ip', metavar='remote-ip', help='results relating to remote-ip')
+limitParser.add_argument('-w', '--where', action='append', dest='awhere', default=[], metavar='\'condition\'', help='filter by given condition(s). i.e. -w \'bytes_send > 1000\'')
 
-code_group = parser.add_mutually_exclusive_group()
+code_group = limitParser.add_mutually_exclusive_group()
 code_group.add_argument('-o', '--200', action='store_true', dest='ok200', help='results with returncode 200')
 code_group.add_argument('-n', '--not200', action='store_true', dest='notok200', help='results w/o returncode 200')
 code_group.add_argument('-r', '--returncode', action='store', dest='returncode', metavar='<code>', help='only results with returncode <code>')
 
-parser.add_argument('--config', action='store', dest='configFile', default=os.path.join(os.path.dirname(sys.argv[0]),'wsstats.cfg'), metavar='<file>', help='use <file> as configuration')
+miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 
+miscParser.add_argument('--SQL', action='store', dest='query', metavar='\'<query>\'', help='execute \'<query>\'')
+miscParser.add_argument('--config', action='store', dest='configFile', default=os.path.join(os.path.dirname(sys.argv[0]),'wsstats.cfg'), metavar='<file>', help='use <file> as configuration')
 
 parsed = parser.parse_args()
 
@@ -106,9 +111,13 @@ qwhere += (' AND status LIKE \'' + parsed.returncode + '\'' if qwhere else ' WHE
 qwhere += (' AND status = 200 ' if qwhere else ' WHERE status = 200 ') if parsed.ok200 else ''
 qwhere += (' AND status != 200 ' if qwhere else ' WHERE status != 200 ') if parsed.notok200 else ''
 
+for condition in parsed.awhere:
+	qwhere += ' AND ' + condition + ' ' if qwhere else ' WHERE ' + condition + ' '
+
 limit = (' LIMIT ' + parsed.resultLimit) if parsed.resultLimit else ''
 
-#print qwhere
+#print (parsed)
+#print (qwhere)
 #exit()
 
 class Table:
@@ -176,10 +185,10 @@ def mkData(data, modcol, mode):
 
 
 def printTableC(caption, c):
-	print Table(caption, [d[0] for d in c.description], c.fetchall())
+	print (Table(caption, [d[0] for d in c.description], c.fetchall()))
 
 def printTable(caption, titles, data):
-	print Table(caption, titles, data)
+	print (Table(caption, titles, data))
 
 def _humanreadable(div,val):
 	affix = ['', 'K', 'M', 'G', 'T', 'P']
