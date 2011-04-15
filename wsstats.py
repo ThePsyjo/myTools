@@ -193,13 +193,13 @@ def printTable(caption, titles, data):
 def _humanreadable(div,val):
 	affix = ['', 'K', 'M', 'G', 'T', 'P']
 	index = 0
-	val = float(val)
+	val = float(val) if val else float(0)
 
 	while val > div:
 		val /= div
 		index += 1
 
-	return ''.join(['{0:.4}'.format(float(val if val else 0)), affix[index]])
+	return ''.join(['{0:.4}'.format(val), affix[index]])
 
 def humanreadable(val):
 	return _humanreadable(1000,val)
