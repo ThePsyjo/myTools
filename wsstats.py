@@ -42,6 +42,8 @@ miscParser = parser.add_argument_group(title='Miscellaneous', description='Other
 miscParser.add_argument('--SQL', action='store', dest='query', metavar='\'<query>\'', help='execute \'<query>\'')
 miscParser.add_argument('--config', action='store', dest='configFile', default=os.path.join(os.path.dirname(sys.argv[0]),'wsstats.cfg'), metavar='<file>', help='use <file> as configuration')
 miscParser.add_argument('--debug', action='store_true', dest='dbg', default=False, help='Show some dev information')
+miscParser.add_argument('--outformat', action='store', dest='outformat', choices='ascii html'.split(), default='ascii', help='Output with specific format')
+
 
 parsed = parser.parse_args()
 
@@ -88,7 +90,7 @@ limit = (' LIMIT ' + parsed.resultLimit) if parsed.resultLimit else ''
 #print (qwhere)
 #exit()
 
-class Table:
+class AsciiTable:
 	def __init__(self,title,headers,rows):
 		self.title=title
 		self.headers=headers
@@ -130,6 +132,33 @@ class Table:
 
 		out.append(bar)
 		return "\n".join(out)
+
+def htmlTable(titles, headers, rows):
+	out = []
+	out.append('<div id="tbl"><div id="tblcaption">' + titles + '</div><div id="headrow">')
+	for header in headers:
+		out.append('<div id="headitem">' + header + '</div>')
+	out.append('</div>')
+
+	odd = False
+	for row in rows:
+		if odd:
+			out.append('<div id="itemrow1">')
+			odd = False
+		else:
+			out.append('<div id="itemrow2">')
+			odd = True
+		for cell in row:
+			out.append('<div id="item">' + str(cell) + '</div>')
+		out.append('</div>')
+	out.append('</div>')
+	return '\n'.join(out)
+
+def Table(titles, headers, rows):
+	if parsed.outformat == 'ascii':
+		return AsciiTable(titles, headers, rows)
+	if parsed.outformat == 'html':
+		return htmlTable(titles, headers, rows)
 
 def mkTitle(c):
 	return [d[0] for d in c.description]
@@ -189,6 +218,9 @@ except Exception as msg:
 	print (msg)
 	exit()
 
+if parsed.outformat == 'html':
+	print ('<html><head><STYLE type="text/css">\n#tbl {display: table; border-width: 3px; border: solid}\n#tblcaption {display: table-caption; text-align: center; background: #FFFFD7}\n#headrow {display: table-row; background: #D7FFAF; border-bottom: 3px solid;}\n#headitem {display: table-cell; padding:2px 5px; border-right: .5px solid; border-left: .5px solid; border-bottom: 1px solid;}\n#itemrow1 {display: table-row; background: #C6E1FF}\n#itemrow2 {display: table-row; background: #8FA2B8}\n#item {display: table-cell; padding:2px 5px; border-right: .5px solid; border-left: .5px solid;}</STYLE></head><body>')
+
 for Action in parsed.Actions:
 	if Action is 'traffic':
 		doQuery('SELECT SUM(bytes_sent) outbound, SUM(bytes_received) inbound FROM ' + config.get('DB', 'table') + ' ' + qwhere)
@@ -240,6 +272,9 @@ for Action in parsed.Actions:
 			if top == 'f':
 				doQuery('SELECT site,url,COUNT(site) cnt,COUNT(site) alias FROM ' + config.get('DB', 'table') + ' ' + qwhere + ' GROUP BY url ORDER BY cnt DESC' + toplimit)
 				printTable(mkTopCaption('Files'), mkTitle(cursor), mkData(cursor.fetchall(), [3], 'n'))
+
+if parsed.outformat == 'html':
+	print ('</body></html>')
 cursor.close()
 conn.close()
 
