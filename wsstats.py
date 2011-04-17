@@ -5,8 +5,9 @@
 ######################
 # Distributed under the terms of the GNU General Public License v2
 
-import ConfigParser, os, MySQLdb, argparse, sys
+import ConfigParser, os, MySQLdb, argparse, sys, time
 from datetime import datetime, timedelta, date
+from threading import Thread, Event
 
 parser = argparse.ArgumentParser(description='Extract stats from webserverlogs')
 
@@ -203,11 +204,42 @@ def humanreadable(val):
 def humanreadablei(val):
 	return _humanreadable(1024,val)
 
+class Twirl(Thread):
+        def __init__(self, chars, sleep_time = 0.2):
+                Thread.__init__(self)
+                self.state = 0
+                self.chars = chars
+                self.sleep_time = sleep_time
+                self.running = True
+                self.ev = Event()
+
+        def run(self):
+                sys.stdout.write(' '*len(self.chars[self.state]))
+                while self.running:
+                        for self.state in range(len(self.chars)):
+                                if self.running:
+                                        sys.stdout.write('\b'*len(self.chars[self.state]) + self.chars[self.state])
+                                        sys.stdout.flush()
+                                        self.ev.wait(self.sleep_time)
+                                else:   break
+
+        def stop(self):
+                self.running = False
+                sys.stdout.write('\b'*len(self.chars[self.state]) + ' '*len(self.chars[self.state]) + '\b'*len(self.chars[self.state]))
+                sys.stdout.flush()
+                self.ev.set()
+                self.join()
+
+def mkTwirl():
+	return Twirl(['.  ', '.. ', '...',' ..','  .','   ',])
+
 def doQuery(q):
 	if parsed.dbg:
 		print (q)
+	tw = mkTwirl()
+	tw.start()
 	cursor.execute(q)
-	return cursor
+	tw.stop()
 
 try:
 	conn = MySQLdb.connect( host = config.get('DB', 'host'), user = config.get('DB', 'user'), passwd = config.get('DB', 'password'))
@@ -240,7 +272,10 @@ for Action in parsed.Actions:
 
 	if Action is 'query':
 		try:
+			tw = mkTwirl()
+			tw.start()
 			cursor.execute(parsed.query)
+			tw.stop()
 		except Exception as msg:
 			print (msg)
 			continue
