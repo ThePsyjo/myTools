@@ -134,7 +134,7 @@ class AsciiTable:
 		return "\n".join(out)
 
 def htmlTable(titles, headers, rows):
-	out = '<div id="floating-box"><div id="tbl"><div id="tblcaption">' + titles + '</div><div id="headrow">'
+	out = ['<div id="floating-box"><div id="tbl"><div id="tblcaption">' + titles + '</div><div id="headrow">']
 	for header in headers:
 		out.append('<div id="headitem">' + header + '</div>')
 	out.append('</div>')
