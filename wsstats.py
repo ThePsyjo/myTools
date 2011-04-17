@@ -134,8 +134,7 @@ class AsciiTable:
 		return "\n".join(out)
 
 def htmlTable(titles, headers, rows):
-	out = []
-	out.append('<div id="tbl"><div id="tblcaption">' + titles + '</div><div id="headrow">')
+	out = '<div id="floating-box"><div id="tbl"><div id="tblcaption">' + titles + '</div><div id="headrow">'
 	for header in headers:
 		out.append('<div id="headitem">' + header + '</div>')
 	out.append('</div>')
@@ -151,7 +150,7 @@ def htmlTable(titles, headers, rows):
 		for cell in row:
 			out.append('<div id="item">' + str(cell) + '</div>')
 		out.append('</div>')
-	out.append('</div>')
+	out.append('</div></div>')
 	return '\n'.join(out)
 
 def Table(titles, headers, rows):
@@ -219,7 +218,7 @@ except Exception as msg:
 	exit()
 
 if parsed.outformat == 'html':
-	print ('<html><head><STYLE type="text/css">\n#tbl {display: table; border-width: 3px; border: solid}\n#tblcaption {display: table-caption; text-align: center; background: #FFFFD7}\n#headrow {display: table-row; background: #D7FFAF; border-bottom: 3px solid;}\n#headitem {display: table-cell; padding:2px 5px; border-right: .5px solid; border-left: .5px solid; border-bottom: 1px solid;}\n#itemrow1 {display: table-row; background: #C6E1FF}\n#itemrow2 {display: table-row; background: #8FA2B8}\n#item {display: table-cell; padding:2px 5px; border-right: .5px solid; border-left: .5px solid;}</STYLE></head><body>')
+	print ('<html><head><STYLE type="text/css">\n#floating-box {float:left; padding: 3px;}\n#tbl {display: table; border-width: 3px; border: solid}\n#tblcaption {display: table-caption; text-align: center; background: #FFFFD7}\n#headrow {display: table-row; background: #D7FFAF; border-bottom: 3px solid;}\n#headitem {display: table-cell; padding:2px 5px; border-right: .5px solid; border-left: .5px solid; border-bottom: 1px solid;}\n#itemrow1 {display: table-row; background: #C6E1FF}\n#itemrow2 {display: table-row; background: #8FA2B8}\n#item {display: table-cell; padding:2px 5px; border-right: .5px solid; border-left: .5px solid;}</STYLE></head><body>')
 
 for Action in parsed.Actions:
 	if Action is 'traffic':
