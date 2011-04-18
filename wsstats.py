@@ -243,8 +243,9 @@ def doQuery(q):
 		print (q)
 	tw = mkTwirl()
 	tw.start()
-	cursor.execute(q)
-	tw.stop()
+	try: cursor.execute(q)
+	except:	tw.stop()
+	finally: tw.stop()
 
 try:
 	conn = MySQLdb.connect( host = config.get('DB', 'host'), user = config.get('DB', 'user'), passwd = config.get('DB', 'password'))
@@ -279,8 +280,9 @@ for Action in parsed.Actions:
 		try:
 			tw = mkTwirl()
 			tw.start()
-			cursor.execute(parsed.query)
-			tw.stop()
+			try: cursor.execute(parsed.query)
+			except: tw.stop()
+			finally: tw.stop()
 		except Exception as msg:
 			print (msg)
 			continue
