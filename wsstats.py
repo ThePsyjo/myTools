@@ -212,9 +212,13 @@ class Twirl(Thread):
                 self.sleep_time = sleep_time
                 self.running = True
                 self.ev = Event()
+		self.output = False
 
         def run(self):
-                sys.stdout.write(' '*len(self.chars[self.state]))
+		self.ev.wait(2)
+		self.output = True
+		if self.running:
+	                sys.stdout.write(' '*len(self.chars[self.state]))
                 while self.running:
                         for self.state in range(len(self.chars)):
                                 if self.running:
@@ -225,8 +229,9 @@ class Twirl(Thread):
 
         def stop(self):
                 self.running = False
-                sys.stdout.write('\b'*len(self.chars[self.state]) + ' '*len(self.chars[self.state]) + '\b'*len(self.chars[self.state]))
-                sys.stdout.flush()
+		if self.output:
+	                sys.stdout.write('\b'*len(self.chars[self.state]) + ' '*len(self.chars[self.state]) + '\b'*len(self.chars[self.state]))
+			sys.stdout.flush()
                 self.ev.set()
                 self.join()
 
