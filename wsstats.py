@@ -81,8 +81,7 @@ if parsed.ip:		qwhere.append('remote_ip LIKE \'' + parsed.ip + '\'')
 if parsed.ok200:	qwhere.append('status = 200')
 if parsed.notok200:	qwhere.append('status != 200')
 
-for code in parsed.returncode:
-	qwhere.append('status LIKE \'' + code + '\'')
+qwhere.append('(' + ' OR '.join(['status LIKE \'' + code + '\'' for code in parsed.returncode]) + ')')
 
 for condition in parsed.awhere:
 	qwhere.append(condition)
