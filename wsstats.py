@@ -81,7 +81,8 @@ if parsed.ip:		qwhere.append('remote_ip LIKE \'' + parsed.ip + '\'')
 if parsed.ok200:	qwhere.append('status = 200')
 if parsed.notok200:	qwhere.append('status != 200')
 
-qwhere.append('(' + ' OR '.join(['status LIKE \'' + code + '\'' for code in parsed.returncode]) + ')')
+if parsed.returncode:
+	qwhere.append('(' + ' OR '.join(['status LIKE \'' + code + '\'' for code in parsed.returncode]) + ')')
 
 for condition in parsed.awhere:
 	qwhere.append(condition)
@@ -90,9 +91,9 @@ qwhere = 'WHERE ' + ' AND '.join(qwhere) if qwhere else ''
 
 limit = (' LIMIT ' + parsed.resultLimit) if parsed.resultLimit else ''
 
-#print (parsed)
-#print (qwhere)
-#exit()
+print (parsed)
+print (qwhere)
+exit()
 
 class AsciiTable:
 	def __init__(self,title,headers,rows):
