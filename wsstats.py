@@ -91,9 +91,9 @@ qwhere = 'WHERE ' + ' AND '.join(qwhere) if qwhere else ''
 
 limit = (' LIMIT ' + parsed.resultLimit) if parsed.resultLimit else ''
 
-print (parsed)
-print (qwhere)
-exit()
+#print (parsed)
+#print (qwhere)
+#exit()
 
 class AsciiTable:
 	def __init__(self,title,headers,rows):
