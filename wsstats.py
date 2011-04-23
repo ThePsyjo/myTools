@@ -18,6 +18,8 @@ actionParser.add_argument('-R', '--returncode-stats', action='append_const', con
 actionParser.add_argument('-C', '--content', action='append_const', const='content', default=[], dest='Actions', help='content stats')
 actionParser.add_argument('-S', '--hoststat', action='append_const', const='hoststat', default=[], dest='Actions', help='host stats')
 actionParser.add_argument('-T', '--top', action='append', choices='t to ti v d f all'.split(), default=[], dest='top', help='generate top 10 (-l to modify) for each (traffic out = \'to\' = \'t\', traffic in = \'ti\', views = \'v\', delay = \'d\', files = \'f\' or all trailing = \'all\'')
+actionParser.add_argument('--SQL', action='store', dest='query', metavar='\'<query>\'', help='execute \'<query>\'')
+actionParser.add_argument('-Q', '--configured_query', action='append', dest='confq', default=[], metavar='<item>', help='execute <item> (\'list\' to list available)')
 
 limitParser = parser.add_argument_group(title='Limiters', description='Limit Database search to the given limits')
 
@@ -40,10 +42,10 @@ code_group.add_argument('-r', '--returncode', action='append', dest='returncode'
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 
-miscParser.add_argument('--SQL', action='store', dest='query', metavar='\'<query>\'', help='execute \'<query>\'')
 miscParser.add_argument('--config', action='store', dest='configFile', default=os.path.join(os.path.dirname(sys.argv[0]),'wsstats.cfg'), metavar='<file>', help='use <file> as configuration')
 miscParser.add_argument('--debug', action='store_true', dest='dbg', default=False, help='Show some dev information')
 miscParser.add_argument('--outformat', action='store', dest='outformat', choices='ascii html'.split(), default='ascii', help='Output with specific format')
+miscParser.add_argument('--test', action='store_true', dest='test')
 
 
 parsed = parser.parse_args()
@@ -55,10 +57,13 @@ except Exception as msg:
 	print (msg)
 	exit()
 
-parsed.Actions += ['top'] if parsed.top else ''
-parsed.Actions += ['query'] if parsed.query else ''
+if parsed.top: parsed.Actions.append('top')
+if parsed.query: parsed.Actions.append('query')
+if parsed.confq: parsed.Actions.append('confq')
 
+parsed.confq = set(parsed.confq)
 parsed.top = set(parsed.top)
+
 if 'all' in parsed.top:
 	parsed.top = 'to ti v d f'.split()
 
@@ -90,10 +95,6 @@ for condition in parsed.awhere:
 qwhere = 'WHERE ' + ' AND '.join(qwhere) if qwhere else ''
 
 limit = (' LIMIT ' + parsed.resultLimit) if parsed.resultLimit else ''
-
-#print (parsed)
-#print (qwhere)
-#exit()
 
 class AsciiTable:
 	def __init__(self,title,headers,rows):
@@ -163,6 +164,20 @@ def Table(titles, headers, rows):
 		return AsciiTable(titles, headers, rows)
 	if parsed.outformat == 'html':
 		return htmlTable(titles, headers, rows)
+
+if parsed.test:
+	print (parsed)
+	print (qwhere)
+	for cq in parsed.confq:
+		try:
+			print ('cq: ', config.get('Queries', cq).replace('{{WHERE}}', qwhere + ' AND ' if qwhere else 'WHERE') + limit)
+		except Exception as msg:
+			print (msg)
+	exit()
+
+if 'list' in parsed.confq:
+	print (Table('Configured Queries', ['name', 'Query'], config.items('Queries')))
+	exit(0)
 
 def mkTitle(c):
 	return [d[0] for d in c.description]
@@ -291,6 +306,13 @@ for Action in parsed.Actions:
 			print (msg)
 			continue
 		printTableC('Sql', cursor)
+	if Action is 'confq':
+		for cq in parsed.confq:
+			try:
+				doQuery(config.get('Queries', cq).replace('{{WHERE}}', qwhere + ' AND ' if qwhere else 'WHERE') + limit)
+				printTableC(cq, cursor)
+			except Exception as msg:
+				print (msg)
 
 	if Action is 'top':
 		toplimit = limit if limit else ' LIMIT 10'
