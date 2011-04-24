@@ -205,7 +205,8 @@ def mkData(data, modcol, mode):
 
 
 def printTableC(caption, c):
-	printTable(caption, [d[0] for d in c.description], c.fetchall())
+	if c.rowcount > 0:
+		printTable(caption, mkTitle(c), c.fetchall())
 
 def printTable(caption, titles, data):
 	print (Table(caption, titles, data))
@@ -267,8 +268,10 @@ def doQuery(q):
 	tw = mkTwirl()
 	tw.start()
 	try: cursor.execute(q)
-	except:	tw.stop()
-	finally: tw.stop()
+	except Exception as msg:
+		print (msg)
+	finally:
+		tw.stop()
 
 try:
 	conn = MySQLdb.connect( host = config.get('DB', 'host'), user = config.get('DB', 'user'), passwd = config.get('DB', 'password'))
@@ -300,16 +303,9 @@ for Action in parsed.Actions:
 		printTable('Host Stats', mkTitle(cursor), mkData(cursor.fetchall(), [2], 'n'))
 
 	if Action is 'query':
-		try:
-			tw = mkTwirl()
-			tw.start()
-			try: cursor.execute(parsed.query)
-			except: tw.stop()
-			finally: tw.stop()
-		except Exception as msg:
-			print (msg)
-			continue
+		doQuery(parsed.query)
 		printTableC('Sql', cursor)
+
 	if Action is 'confq':
 		for cq in parsed.confq:
 			try:
