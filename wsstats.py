@@ -43,7 +43,10 @@ code_group.add_argument('-r', '--returncode', action='append', dest='returncode'
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 
-miscParser.add_argument('--config', action='store', dest='configFile', default=os.path.join(os.path.dirname(sys.argv[0]),'wsstats.cfg'), metavar='<file>', help='use <file> as configuration')
+miscParser.add_argument('--config', action='store', dest='configFile', 
+	default=os.path.join(os.path.dirname(sys.argv[0]) if os.name != 'posix' else '/etc/','wsstats.cfg'),
+	metavar='<file>',
+	help='use <file> as configuration')
 miscParser.add_argument('--debug', action='store_true', dest='dbg', default=False, help='Show some dev information')
 miscParser.add_argument('--outformat', action='store', dest='outformat', choices='ascii html'.split(), default='ascii', help='Output with specific format')
 miscParser.add_argument('--test', action='store_true', dest='test')
