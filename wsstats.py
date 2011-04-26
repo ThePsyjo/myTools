@@ -24,11 +24,14 @@ actionParser.add_argument('-Q', '--configured_query', action='append', dest='con
 
 limitParser = parser.add_argument_group(title='Limiters', description='Limit Database search to the given limits')
 
-dt_group = limitParser.add_mutually_exclusive_group()
-dt_group.add_argument('-f', '--from', action='store', dest='time_from', metavar='<datetime>', help='results beginning this time ("Y-m-d H:M:S")')
-dt_group.add_argument('-j', '--today', action='store_const', dest='time_from', const=date.today().isoformat()+' 00:00:00', help='Alias for "-f \'<today> 00:00:00\'"')
-dt_group.add_argument('-L', '--last', action='store', dest='time_last', metavar='<time>', help='results in the last <time> (H:M:S)')
-limitParser.add_argument('-u', '--until', action='store', dest='time_until', metavar='<datetime>', help='results until this time ("Y-m-d H:M:S")')
+from_group = limitParser.add_mutually_exclusive_group()
+until_group = limitParser.add_mutually_exclusive_group()
+
+from_group.add_argument('-f', '--from', action='store', dest='time_from', metavar='<datetime>', help='results beginning this time ("Y-m-d H:M:S")')
+from_group.add_argument('-j', '--today', action='store_const', dest='time_from', const=date.today().isoformat()+' 00:00:00', help='Alias for "-f \'<today> 00:00:00\'"')
+from_group.add_argument('-L', '--last', action='store', dest='time_last', metavar='<time>', help='results in the last <time> (H:M:S)')
+from_group.add_argument('-y', '--yesterday', action='store', dest='yesterdays', metavar='<days>', nargs='?', type=int, const=1, help='results from yesterday <days> days ago (this will override -u/--until)')
+until_group.add_argument('-u', '--until', action='store', dest='time_until', metavar='<datetime>', help='results until this time ("Y-m-d H:M:S")')
 
 limitParser.add_argument('-l', '--limit', action='store', dest='resultLimit', metavar='N', help='limit to N results')
 limitParser.add_argument('-H', '--host', action='store', dest='host', metavar='hostname', help='results relating to hostname')
@@ -71,19 +74,26 @@ parsed.top = set(parsed.top)
 if 'all' in parsed.top:
 	parsed.top = 'to ti v d f'.split()
 
+qwhere = []
+
 def tpart(f): return int(parsed.time_last.split(':')[f])
 try:
-	from_dt = ''
-	if parsed.time_last: from_dt = (datetime.now() - timedelta(hours=tpart(0), minutes=tpart(1), seconds=tpart(2))).strftime('%Y-%m-%d %H:%M:%S')
-	if parsed.time_from: from_dt = datetime.strptime(parsed.time_from,  "%Y-%m-%d %H:%M:%S").isoformat(' ')
-	until_dt = datetime.strptime(parsed.time_until, "%Y-%m-%d %H:%M:%S").isoformat(' ') if parsed.time_until else ''
+	from_dt  = ''
+	until_dt = ''
+	if parsed.time_last: from_dt   = (datetime.now() - timedelta(hours=tpart(0), minutes=tpart(1), seconds=tpart(2))).strftime('%Y-%m-%d %H:%M:%S')
+	if parsed.time_from: from_dt   = datetime.strptime(parsed.time_from,  "%Y-%m-%d %H:%M:%S").isoformat(' ')
+	if parsed.time_until: until_dt = datetime.strptime(parsed.time_until, "%Y-%m-%d %H:%M:%S").isoformat(' ')
+	# override both if parsed.yesterdays is set
+	if parsed.yesterdays:
+		qwhere.append('datetime >= CURDATE() - INTERVAL {0} DAY'.format(parsed.yesterdays))
+		qwhere.append('datetime <= CURDATE() - INTERVAL {0} DAY'.format(parsed.yesterdays - 1))
+		from_dt = until_dt = ''
 except ValueError as msg:
 	print (msg)
 	exit()
 
-qwhere = []
 if from_dt:		qwhere.append('datetime >= \'' + from_dt  + '\'')
-if parsed.time_until:	qwhere.append('datetime <= \'' + until_dt + '\'')
+if until_dt:		qwhere.append('datetime <= \'' + until_dt + '\'')
 if parsed.site:		qwhere.append('site LIKE \'' + parsed.site + '%\'')
 if parsed.host:		qwhere.append('host LIKE \'' + parsed.host + '%\'')
 if parsed.ip:		qwhere.append('remote_ip LIKE \'' + parsed.ip + '\'')
