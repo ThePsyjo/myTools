@@ -353,7 +353,7 @@ for Action in parsed.Actions:
 				printTable(mkTopCaption('Files'), mkTitle(cursor), mkData(cursor.fetchall(), [3], 'n'))
 
 if parsed.outformat == 'html':
-	print ('<div style="clear:both; left:0; text-align:right; bottom:0; width:100%;">generated in {0}</div></body></html>'.format(datetime.now() - starttime))
+	print ('<div style="clear:both; left:0; text-align:right; bottom:0; width:100%;">generated in {0} at {1}</div></body></html>'.format(datetime.now() - starttime, datetime.now())
 cursor.close()
 conn.close()
 
