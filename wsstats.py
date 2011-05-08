@@ -293,6 +293,7 @@ except Exception as msg:
 
 if parsed.outformat == 'html':
 	print ('<html><head><STYLE type="text/css">\n#floating-box {float:left; padding: 3px;}\n#tbl {display: table; border-width: 3px; border: solid}\n#tblcaption {display: table-caption; text-align: center; background: #FFFFD7}\n#headrow {display: table-row; background: #D7FFAF; border-bottom: 3px solid;}\n#headitem {display: table-cell; padding:2px 5px; border-right: .5px solid; border-left: .5px solid; border-bottom: 1px solid;}\n#itemrow1 {display: table-row; background: #C6E1FF}\n#itemrow2 {display: table-row; background: #8FA2B8}\n#item {display: table-cell; padding:2px 5px; border-right: .5px solid; border-left: .5px solid;}</STYLE></head><body>')
+	starttime = datetime.now()
 
 for Action in parsed.Actions:
 	if Action is 'traffic':
@@ -351,7 +352,7 @@ for Action in parsed.Actions:
 				printTable(mkTopCaption('Files'), mkTitle(cursor), mkData(cursor.fetchall(), [3], 'n'))
 
 if parsed.outformat == 'html':
-	print ('</body></html>')
+	print ('<br><br>generated in {0}</body></html>'.format(datetime.now() - starttime))
 cursor.close()
 conn.close()
 
