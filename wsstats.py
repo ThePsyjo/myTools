@@ -275,13 +275,14 @@ def mkTwirl():
 def doQuery(q):
 	if parsed.dbg:
 		print (q)
-	tw = mkTwirl()
-	tw.start()
+	if parsed.outformat != 'html':
+		tw = mkTwirl()
+		tw.start()
 	try: cursor.execute(q)
 	except Exception as msg:
 		print (msg)
 	finally:
-		tw.stop()
+		if parsed.outformat != 'html': tw.stop()
 
 try:
 	conn = MySQLdb.connect( host = config.get('DB', 'host'), user = config.get('DB', 'user'), passwd = config.get('DB', 'password'))
@@ -352,7 +353,7 @@ for Action in parsed.Actions:
 				printTable(mkTopCaption('Files'), mkTitle(cursor), mkData(cursor.fetchall(), [3], 'n'))
 
 if parsed.outformat == 'html':
-	print ('<br><br>generated in {0}</body></html>'.format(datetime.now() - starttime))
+	print ('<div style="clear:both; left:0; text-align:right; bottom:0; width:100%;">generated in {0}</div></body></html>'.format(datetime.now() - starttime))
 cursor.close()
 conn.close()
 
