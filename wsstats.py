@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.6
 ######################
-# wsstats.py         #
-#                    #
+# wsstats.py	     #
+#		     #
 # 2011 (c) by Psyjo  #
 ######################
 # Distributed under the terms of the GNU General Public License v2
@@ -239,35 +239,35 @@ def humanreadablei(val):
 	return _humanreadable(1024,val)
 
 class Twirl(Thread):
-        def __init__(self, chars, sleep_time = 0.2):
-                Thread.__init__(self)
-                self.state = 0
-                self.chars = chars
-                self.sleep_time = sleep_time
-                self.running = True
-                self.ev = Event()
+	def __init__(self, chars, sleep_time = 0.2):
+		Thread.__init__(self)
+		self.state = 0
+		self.chars = chars
+		self.sleep_time = sleep_time
+		self.running = True
+		self.ev = Event()
 		self.output = False
 
-        def run(self):
+	def run(self):
 		self.ev.wait(2)
 		self.output = True
 		if self.running:
-	                sys.stdout.write(' '*len(self.chars[self.state]))
-                while self.running:
-                        for self.state in range(len(self.chars)):
-                                if self.running:
-                                        sys.stdout.write('\b'*len(self.chars[self.state]) + self.chars[self.state])
-                                        sys.stdout.flush()
-                                        self.ev.wait(self.sleep_time)
-                                else:   break
+			sys.stdout.write(' '*len(self.chars[self.state]))
+		while self.running:
+			for self.state in range(len(self.chars)):
+				if self.running:
+					sys.stdout.write('\b'*len(self.chars[self.state]) + self.chars[self.state])
+					sys.stdout.flush()
+					self.ev.wait(self.sleep_time)
+				else:   break
 
-        def stop(self):
-                self.running = False
+	def stop(self):
+		self.running = False
 		if self.output:
-	                sys.stdout.write('\b'*len(self.chars[self.state]) + ' '*len(self.chars[self.state]) + '\b'*len(self.chars[self.state]))
+			sys.stdout.write('\b'*len(self.chars[self.state]) + ' '*len(self.chars[self.state]) + '\b'*len(self.chars[self.state]))
 			sys.stdout.flush()
-                self.ev.set()
-                self.join()
+		self.ev.set()
+		self.join()
 
 def mkTwirl():
 	return Twirl(['.  ', '.. ', '...',' ..','  .','   ',])
