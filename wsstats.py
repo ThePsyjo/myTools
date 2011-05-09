@@ -229,22 +229,42 @@ def printTableC(caption, c):
 def printTable(caption, titles, data):
 	print (Table(caption, titles, data))
 
-def _humanreadable(div,val):
-	affix = ['', 'K', 'M', 'G', 'T', 'P']
-	index = 0
-	val = float(val) if val else float(0)
+class Humanreadable():
+        def __init__(self, val = float(0), div = 1024):
+                self.affix = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+                self.div = div
+                self.val = val
 
-	while val > div:
-		val /= div
-		index += 1
+        def calc(self):
+                work = float(self.val) if self.val else float(0)
+                self.index = 0
+                while work >= self.div:
+                        work /= self.div
+			if self.index >= 8: break
+                        self.index += 1
+                return work
 
-	return ''.join(['{0:.4}'.format(val), affix[index]])
+        def setDiv(self, div):
+                self.div = div
+
+        def setVal(self, val):
+                self.val = val
+
+        def __str__(self):
+                return ''.join(['{0:.4}'.format(self.calc()), self.affix[self.index]])
+
+        def __float__(self):
+                return self.calc()
+
+        def prefix(self):
+                self.calc()
+                return self.affix[self.index]
 
 def humanreadable(val):
-	return _humanreadable(1000,val)
+	return Humanreadable(val, 1000)
 
 def humanreadablei(val):
-	return _humanreadable(1024,val)
+	return Humanreadable(val)
 
 class Twirl(Thread):
 	def __init__(self, chars, sleep_time = 0.2):
