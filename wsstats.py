@@ -1,12 +1,20 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 ######################
 # wsstats.py	     #
 #		     #
 # 2011 (c) by Psyjo  #
 ######################
 # Distributed under the terms of the GNU General Public License v2
+import sys
 
-import ConfigParser, os, MySQLdb, argparse, sys, time
+if  sys.version_info < (2,6):
+	print ('Python is too old here. Upgrade at least to 2.6!')
+	sys.exit(1);
+else:
+	if sys.version_info < (3,0): import ConfigParser
+	else: import configparser as ConfigParser
+
+import os, argparse, time, MySQLdb
 from datetime import datetime, timedelta, date
 from threading import Thread, Event
 
