@@ -86,7 +86,7 @@ qwhere = []
 
 # if no time limiter is set, set default (last 10 minute)
 if not parsed.time_last and not parsed.time_from and not parsed.time_until and not parsed.yesterdays:
-	parsed.time_last = '00:10:00'
+	parsed.time_last = config.get('Defaults', 'timelimit')
 
 def tpart(f): return int(parsed.time_last.split(':')[f])
 try:
