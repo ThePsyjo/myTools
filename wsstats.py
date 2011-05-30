@@ -48,9 +48,9 @@ limitParser.add_argument('-i', '--ip', action='store', dest='ip', metavar='remot
 limitParser.add_argument('-w', '--where', action='append', dest='awhere', default=[], metavar='\'condition\'', help='filter by given condition(s). i.e. -w \'bytes_send > 1000\'')
 
 code_group = limitParser.add_mutually_exclusive_group()
-code_group.add_argument('-o', '--200', action='store_true', dest='ok200', help='results with returncode 200')
-code_group.add_argument('-n', '--not200', action='store_true', dest='notok200', help='results w/o returncode 200')
-code_group.add_argument('-r', '--returncode', action='append', dest='returncode', default=[], metavar='<code>', help='only results with returncode <code>')
+code_group.add_argument('-o', '--200', action='append_const', const=['200'], dest='returncode', help='results with returncode 200')
+code_group.add_argument('-n', '--404', action='append_const', const=['404'], dest='returncode', help='results with returncode 404')
+code_group.add_argument('-r', '--returncode', action='append', dest='returncode', default=[], metavar='<code>', nargs='*', help='only results with returncode <code>')
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 
@@ -84,11 +84,17 @@ if 'all' in parsed.top:
 
 qwhere = []
 
+# if no time limiter is set, set default (last 10 minute)
+if not parsed.time_last and not parsed.time_from and not parsed.time_until and not parsed.yesterdays:
+	parsed.time_last = '00:10:00'
+
 def tpart(f): return int(parsed.time_last.split(':')[f])
 try:
 	from_dt  = ''
 	until_dt = ''
-	if parsed.time_last: from_dt   = (datetime.now() - timedelta(hours=tpart(0), minutes=tpart(1), seconds=tpart(2))).strftime('%Y-%m-%d %H:%M:%S')
+	if parsed.time_last:
+		from_dt   = (datetime.now() - timedelta(hours=tpart(0), minutes=tpart(1), seconds=tpart(2))).strftime('%Y-%m-%d %H:%M:%S')
+		until_dt  = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 	if parsed.time_from: from_dt   = datetime.strptime(parsed.time_from,  "%Y-%m-%d %H:%M:%S").isoformat(' ')
 	if parsed.time_until: until_dt = datetime.strptime(parsed.time_until, "%Y-%m-%d %H:%M:%S").isoformat(' ')
 	# override both if parsed.yesterdays is set
@@ -105,11 +111,9 @@ if until_dt:		qwhere.append('datetime <= \'' + until_dt + '\'')
 if parsed.site:		qwhere.append('site LIKE \'' + parsed.site + '%\'')
 if parsed.host:		qwhere.append('host LIKE \'' + parsed.host + '%\'')
 if parsed.ip:		qwhere.append('remote_ip LIKE \'' + parsed.ip + '\'')
-if parsed.ok200:	qwhere.append('status = 200')
-if parsed.notok200:	qwhere.append('status != 200')
 
 if parsed.returncode:
-	qwhere.append('(' + ' OR '.join(['status LIKE \'' + code + '\'' for code in parsed.returncode]) + ')')
+	qwhere.append('(' + ' OR '.join(['status LIKE \'' + code + '\'' for block in parsed.returncode for code in block]) + ')')
 
 for condition in parsed.awhere:
 	qwhere.append(condition)
