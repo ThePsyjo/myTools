@@ -353,7 +353,7 @@ for Action in parsed.Actions:
 	if Action is 'confq':
 		for cq in parsed.confq:
 			try:
-				doQuery(config.get('Queries', cq).replace('{{WHERE}}', qwhere + ' AND ' if qwhere else 'WHERE') + limit)
+				doQuery(config.get('Queries', cq).replace('{{WHERE}}', qwhere if qwhere else 'WHERE') + limit)
 				printTableC(cq, cursor)
 			except Exception as msg:
 				print (msg)
