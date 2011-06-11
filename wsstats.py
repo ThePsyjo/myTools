@@ -39,6 +39,7 @@ from_group.add_argument('-f', '--from', action='store', dest='time_from', metava
 from_group.add_argument('-j', '--today', action='store_const', dest='time_from', const=date.today().isoformat()+' 00:00:00', help='Alias for "-f \'<today> 00:00:00\'"')
 from_group.add_argument('-L', '--last', action='store', dest='time_last', metavar='<time>', help='results in the last <time> (H:M:S)')
 from_group.add_argument('-y', '--yesterday', action='store', dest='yesterdays', metavar='<days>', nargs='?', type=int, const=1, help='results from yesterday <days> days ago (this will override -u/--until)')
+from_group.add_argument('-I', '--ignore-default-timelimit', action='store_true', dest='ignore_timelimit', help='ignore the default timelimit if configured')
 until_group.add_argument('-u', '--until', action='store', dest='time_until', metavar='<datetime>', help='results until this time ("Y-m-d H:M:S")')
 
 limitParser.add_argument('-l', '--limit', action='store', dest='resultLimit', metavar='N', help='limit to N results')
@@ -85,7 +86,7 @@ if 'all' in parsed.top:
 qwhere = []
 
 # if no time limiter is set, set default (last 10 minute)
-if not parsed.time_last and not parsed.time_from and not parsed.time_until and not parsed.yesterdays:
+if not parsed.time_last and not parsed.time_from and not parsed.time_until and not parsed.yesterdays and not parsed.ignore_timelimit:
 	parsed.time_last = config.get('Defaults', 'timelimit')
 
 def tpart(f): return int(parsed.time_last.split(':')[f])
