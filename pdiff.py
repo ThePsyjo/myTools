@@ -1,8 +1,3 @@
 import sys
-
 from difflib import SequenceMatcher
-f1 = open(sys.argv[1]).read()
-f2 = open(sys.argv[2]).read()
-m = SequenceMatcher(None, f1, f2)
-print(m.ratio()*100)
-
+print ('"%s" and "%s" match for %f%%' % (sys.argv[1], sys.argv[2], SequenceMatcher(None, open(sys.argv[1]).read(), open(sys.argv[2]).read()).ratio()*100))
