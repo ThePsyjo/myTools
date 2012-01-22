@@ -51,6 +51,7 @@ limitParser.add_argument('-w', '--where', action='append', dest='awhere', defaul
 code_group = limitParser.add_mutually_exclusive_group()
 code_group.add_argument('-o', '--200', action='append_const', const=['200'], dest='returncode', help='results with returncode 200')
 code_group.add_argument('-n', '--404', action='append_const', const=['404'], dest='returncode', help='results with returncode 404')
+code_group.add_argument('-N', '--no-404', action='store_const', const=True, dest='no404', help='results w/o returncode 404')
 code_group.add_argument('-r', '--returncode', action='append', dest='returncode', default=[], metavar='<code>', nargs='*', help='only results with returncode <code>')
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
@@ -115,6 +116,9 @@ if parsed.ip:		qwhere.append('remote_ip LIKE \'' + parsed.ip + '\'')
 
 if parsed.returncode:
 	qwhere.append('(' + ' OR '.join(['status LIKE \'' + code + '\'' for block in parsed.returncode for code in block]) + ')')
+
+if parsed.no404:
+	qwhere.append('status != 404')
 
 for condition in parsed.awhere:
 	qwhere.append(condition)
