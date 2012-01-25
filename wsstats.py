@@ -20,7 +20,7 @@ from threading import Thread, Event
 
 parser = argparse.ArgumentParser(description='Extract stats from webserverlogs')
 
-actionParser = parser.add_argument_group(title='Actions', description='At least one shouls be activated')
+actionParser = parser.add_argument_group(title='Actions', description='At least one should be activated')
 
 actionParser.add_argument('-t', '--traffic', action='append_const', const='traffic', default=[], dest='Actions', help='show incomming and outgoing traffic')
 actionParser.add_argument('-R', '--returncode-stats', action='append_const', const='status', default=[], dest='Actions', help='count returncodes')
