@@ -93,28 +93,53 @@ class Table:
                 out.append(bar)
                 return "\n".join(out)
 
+class Dataparser:
+	def __init__(self, section = None):
+		self.section = section
+		self.value = ''
+		self.suggest = ''
+		self.target = ''
+		self.enum = []
+		self.args = ''
+
+	def setSection(self, section):
+		self.section = section
+
+	def getList(self):
+		if not self.section:
+			raise ValueError('section not set')
+		print (Table('destinations', ['name', 'destination'], config.items(self.section)))
+
+	def suggestTarget(self, keyword):
+		if keyword == 'list':
+			self.getList()
+			exit(0)
+
+		try:
+			self.value = config.get(self.section, keyword)
+		except:
+			self.suggest = [itm for itm in config.options(self.section) if keyword in itm]
+			if len(self.suggest) == 1:
+				self.target = self.suggest.pop()
+				self.value = config.get(self.section, self.target)
+				print ('assuming "%s" is the right target' % self.target)
+			else:
+				print ('"%s" not found.' % keyword)
+				if len(self.suggest) > 0:
+					for i, v in enumerate(self.suggest): self.enum.append([i,v])
+					print ('You may mean one of the following:')
+					print (Table('matching', ['#', 'destination'], self.enum))
+				exit(1)
+
+		return self.value
+
+	def getArgs(self):
+		try: self.args = config.get('%s_Options' % self.section, 'args')
+		except: self.args = ''
+		return self.args
+
+p = Dataparser()
 
 if parsed.dst_ssh:
-	if parsed.dst_ssh == 'list':
-		print (Table('SSH destinations', ['name', 'destination'], config.items('SSH')))
-		exit(0)
-	try:
-		value = config.get('SSH', parsed.dst_ssh)
-	except:
-		suggest = [itm for itm in config.options('SSH') if parsed.dst_ssh in itm]
-		if len(suggest) == 1:
-			target = suggest.pop()
-			value = config.get('SSH', target)
-			print ('assuming "%s" is the right target' % target)
-		else:
-			print ('"%s" not found.' % parsed.dst_ssh)
-			if len(suggest) > 0:
-				enum = []
-				for i, v in enumerate(suggest): enum.append([i,v])
-				print ('You may mean one of the following:')
-				print (Table('matching', ['#', 'destination'], enum))
-			exit(1)
-
-	try: opts = config.get('Options', 'ssh_args')
-	except: opts = ''
-	os.system('ssh %s %s' % (opts, value))
+	p.setSection('SSH')
+	os.system('ssh %s %s' % (p.getArgs(), p.suggestTarget(parsed.dst_ssh)))
