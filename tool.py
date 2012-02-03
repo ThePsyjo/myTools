@@ -25,6 +25,7 @@ parser = argparse.ArgumentParser(description='blah')
 
 actionParser = parser.add_argument_group(title='Actions', description='At least one should be activated')
 actionParser.add_argument('-c', '--conn', action='store', dest='dst_ssh', metavar='<destination>', help='Connect via ssh. Use "list" to get a list of available targets.')
+actionParser.add_argument('-r', '--rdp', action='store', dest='dst_rdp', metavar='<destination>', help='Connect via rdesktop. Use "list" to get a list of available targets.')
 
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
@@ -138,8 +139,20 @@ class Dataparser:
 		except: self.args = ''
 		return self.args
 
+	def getBin(self):
+		try: self.args = config.get('%s_Options' % self.section, 'bin')
+		except:
+			print('Binary file at section %s not set!' % self.section)
+			exit(1)
+		return self.args
+
 p = Dataparser()
 
 if parsed.dst_ssh:
 	p.setSection('SSH')
 	os.system('ssh %s %s' % (p.getArgs(), p.suggestTarget(parsed.dst_ssh)))
+
+if parsed.dst_rdp:
+	p.setSection('RDP')
+	os.system('%s %s %s' % (p.getBin(), p.getArgs(), p.suggestTarget(parsed.dst_rdp)))
+
