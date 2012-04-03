@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-######################
-# wsstats.py         #
-#                    #
-# 2012 (c) by Psyjo  #
-######################
+#####################
+# pu.py             #
+# PsyjoUtil         #
+#                   #
+# 2012 (c) by Psyjo #
+#####################
 # Distributed under the terms of the GNU General Public License v2
 
 import sys
@@ -24,13 +25,14 @@ parser = argparse.ArgumentParser(description='blah')
 
 
 actionParser = parser.add_argument_group(title='Actions', description='At least one should be activated')
-actionParser.add_argument('-c', '--conn', action='store', dest='dst_ssh', metavar='<destination>', help='Connect via ssh. Use "list" to get a list of available targets.')
-actionParser.add_argument('-r', '--rdp', action='store', dest='dst_rdp', metavar='<destination>', help='Connect via rdesktop. Use "list" to get a list of available targets.')
+actionParser.add_argument('-c', '--conn', action='store', dest='dst_ssh', metavar='<target>', help='Connect via ssh. Use "list" to get a list of available targets.')
+actionParser.add_argument('-C', '--command', action='store', dest='ssh_remote_command', metavar='<command>', help='Pass this command to the target. If not used with -c/--conn it will be ignored')
+actionParser.add_argument('-r', '--rdp', action='store', dest='dst_rdp', metavar='<target>', help='Connect via rdesktop. Use "list" to get a list of available targets.')
 
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 miscParser.add_argument('--config', action='store', dest='configFile',
-        default=os.path.join(os.path.dirname(sys.argv[0]) if os.name != 'posix' else os.path.expanduser('~'), '.tool/config.ini'),
+        default=os.path.join(os.path.dirname(sys.argv[0]) if os.name != 'posix' else os.path.expanduser('~'), '.pu/config.ini'),
         metavar='<file>',
         help='use <file> as configuration')
 miscParser.add_argument('--debug', action='store_true', dest='dbg', default=False, help='Show some dev information')
@@ -150,9 +152,9 @@ p = Dataparser()
 
 if parsed.dst_ssh:
 	p.setSection('SSH')
-	os.system('ssh %s %s' % (p.getArgs(), p.suggestTarget(parsed.dst_ssh)))
+	#print('ssh %s %s %s' % (p.getArgs(), p.suggestTarget(parsed.dst_ssh), '\'%s\'' % parsed.ssh_remote_command if parsed.ssh_remote_command else ''))
+	os.system('ssh %s %s %s' % (p.getArgs(), p.suggestTarget(parsed.dst_ssh), '\'%s\'' % parsed.ssh_remote_command if parsed.ssh_remote_command else ''))
 
 if parsed.dst_rdp:
 	p.setSection('RDP')
 	os.system('%s %s %s' % (p.getBin(), p.getArgs(), p.suggestTarget(parsed.dst_rdp)))
-
