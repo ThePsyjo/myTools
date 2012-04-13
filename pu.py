@@ -26,9 +26,14 @@ parser = argparse.ArgumentParser(description='blah')
 
 actionParser = parser.add_argument_group(title='Actions', description='At least one should be activated')
 actionParser.add_argument('-c', '--conn', action='store', dest='dst_ssh', metavar='<target>', help='Connect via ssh. Use "list" to get a list of available targets.')
-actionParser.add_argument('-C', '--command', action='store', dest='ssh_remote_command', metavar='<command>', help='Pass this command to the target. If not used with -c/--conn it will be ignored')
 actionParser.add_argument('-r', '--rdp', action='store', dest='dst_rdp', metavar='<target>', help='Connect via rdesktop. Use "list" to get a list of available targets.')
 
+
+optionParser = parser.add_argument_group(title='Options', description='optional arguments')
+optionParser.add_argument('-C', '--command', action='store', dest='ssh_remote_command', metavar='<command>', help='Pass this command to the target. To be used with -c/--conn')
+optionParser.add_argument('-u', '--user', action='store', dest='user', help='Login with this user. To be used with -r/--rdp')
+optionParser.add_argument('-p', '--password', action='store', dest='password', help='Login with this password. To be used with -r/--rdp')
+optionParser.add_argument('-P', '--port', action='store', dest='port', help='Use this Port. To be used with -c/--conn')
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 miscParser.add_argument('--config', action='store', dest='configFile',
@@ -104,6 +109,9 @@ class Dataparser:
 		self.target = ''
 		self.enum = []
 		self.args = ''
+		self.userArg = ''
+		self.passwordArg = ''
+		self.portArg = ''
 
 	def setSection(self, section):
 		self.section = section
@@ -141,10 +149,31 @@ class Dataparser:
 		except: self.args = ''
 		return self.args
 
+	def getUserArg(self):
+		try: self.userArg = config.get('%s_Options' % self.section, 'userArg')
+		except:
+			print('"userArg" not set in section %s !' % '"%s_Options"' % self.section)
+			sys.exit(1)
+		return self.userArg
+
+	def getPasswordArg(self):
+		try: self.passwordArg = config.get('%s_Options' % self.section, 'passwordArg')
+		except:
+			print('"passwordArg" not set in section %s !' % '"%s_Options"' % self.section)
+			sys.exit(1)
+		return self.passwordArg
+
+	def getPortArg(self):
+		try: self.portArg = config.get('%s_Options' % self.section, 'portArg')
+		except:
+			print('"portArg" not set in section %s !' % '"%s_Options"' % self.section)
+			sys.exit(1)
+		return self.portArg
+
 	def getBin(self):
 		try: self.args = config.get('%s_Options' % self.section, 'bin')
 		except:
-			print('Binary file at section %s not set!' % self.section)
+			print('"bin" not set in section %s !' % '"%s_Options"' % self.section)
 			exit(1)
 		return self.args
 
@@ -152,9 +181,15 @@ p = Dataparser()
 
 if parsed.dst_ssh:
 	p.setSection('SSH')
-	#print('ssh %s %s %s' % (p.getArgs(), p.suggestTarget(parsed.dst_ssh), '\'%s\'' % parsed.ssh_remote_command if parsed.ssh_remote_command else ''))
-	os.system('ssh %s %s %s' % (p.getArgs(), p.suggestTarget(parsed.dst_ssh), '\'%s\'' % parsed.ssh_remote_command if parsed.ssh_remote_command else ''))
+	xargs = '%s %s' % ( '%s %s' % ( p.getPortArg(), parsed.port ) if parsed.port else '',
+			 '%s %s' % ( p.getUserArg(), parsed.user ) if parsed.user else '')
+
+	os.system('%s %s %s %s %s' % (p.getBin(), p.getArgs(), xargs, p.suggestTarget(parsed.dst_ssh), '\'%s\'' % parsed.ssh_remote_command if parsed.ssh_remote_command else ''))
 
 if parsed.dst_rdp:
 	p.setSection('RDP')
-	os.system('%s %s %s' % (p.getBin(), p.getArgs(), p.suggestTarget(parsed.dst_rdp)))
+
+	xargs = '%s %s' % ( '%s %s' % ( p.getUserArg(),	parsed.user ) if parsed.user else '',
+			    '%s %s' % ( p.getPasswordArg(), parsed.password ) if parsed.password else '' )
+
+	os.system('%s %s %s %s' % (p.getBin(), p.getArgs(), xargs, p.suggestTarget(parsed.dst_rdp)))
