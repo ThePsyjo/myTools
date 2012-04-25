@@ -8,6 +8,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 import sys
+import re
 
 if  sys.version_info < (2,6):
         print ('Python is too old here. Upgrade at least to 2.6!')
@@ -112,6 +113,8 @@ class Dataparser:
 		self.userArg = ''
 		self.passwordArg = ''
 		self.portArg = ''
+		#self.regex = re.compile('((?P<login>\w+)(:(?P<password>\w+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
+		self.regex = re.compile('((?P<login>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
 
 	def setSection(self, section):
 		self.section = section
@@ -142,7 +145,18 @@ class Dataparser:
 					print (Table('matching', ['#', 'destination'], self.enum))
 				exit(1)
 
-		return self.value
+		#return self.value
+		self.value = self.regex.match(self.value).groupdict()
+		#print self.value
+
+	def getHost(self):
+		return self.value['host']
+	def getUser(self):
+		return self.value['login']
+	def getPassword(self):
+		return self.value['password']
+	def getPort(self):
+		return self.value['port']
 
 	def getArgs(self):
 		try: self.args = config.get('%s_Options' % self.section, 'args')
@@ -177,19 +191,55 @@ class Dataparser:
 			exit(1)
 		return self.args
 
+	def concat(self, glue, one, two):
+		return '%s%s%s' % ( one, glue, two )
+
+	def quote(self, txt, tryQuote = 1):
+		if tryQuote:
+			if '"' in txt or "'" not in txt:	return "'%s'" % txt
+			elif "'" in txt or '"' not in txt:	return '"%s"' % txt
+			else:					return txt
+		else:	return txt
+
+	def mkPortArg(self, port):
+		if port:		return self.concat(' ', self.getPortArg(), port)
+		elif self.getPort():	return self.concat(' ', self.getPortArg(), self.getPort())
+		else:			return ''
+
+	def mkUserArg(self, user):
+		if user:		return self.concat(' ', self.getUserArg(), user)
+		elif self.getUser():	return self.concat(' ', self.getUserArg(), self.getUser())
+		else:			return ''
+
+	def mkPasswordArg(self, password):
+		if password:		return self.concat(' ', self.getPasswordArg(), self.quote(password))
+		elif self.getPassword():return self.concat(' ', self.getPasswordArg(), self.quote(self.getPassword()))
+		else:			return ''
+
+	def mkHostPort(self, port):
+		if port:		return self.concat(':', self.getHost(), port)
+		elif self.getPort():	return self.concat(':', self.getHost(), self.getPort())
+		else:			return self.getHost()
+
 p = Dataparser()
 
 if parsed.dst_ssh:
 	p.setSection('SSH')
-	xargs = '%s %s' % ( '%s %s' % ( p.getPortArg(), parsed.port ) if parsed.port else '',
-			 '%s %s' % ( p.getUserArg(), parsed.user ) if parsed.user else '')
+	p.suggestTarget(parsed.dst_ssh)
 
-	os.system('%s %s %s %s %s' % (p.getBin(), p.getArgs(), xargs, p.suggestTarget(parsed.dst_ssh), '\'%s\'' % parsed.ssh_remote_command if parsed.ssh_remote_command else ''))
+	os.system('%s %s %s %s %s %s' % (p.getBin(),
+					p.getArgs(),
+					p.mkPortArg(parsed.port),
+					p.mkUserArg(parsed.user),
+					p.getHost(),
+					'\'%s\'' % parsed.ssh_remote_command if parsed.ssh_remote_command else ''))
 
 if parsed.dst_rdp:
 	p.setSection('RDP')
+	p.suggestTarget(parsed.dst_rdp)
 
-	xargs = '%s %s' % ( '%s %s' % ( p.getUserArg(),	parsed.user ) if parsed.user else '',
-			    '%s %s' % ( p.getPasswordArg(), parsed.password ) if parsed.password else '' )
-
-	os.system('%s %s %s %s' % (p.getBin(), p.getArgs(), xargs, p.suggestTarget(parsed.dst_rdp)))
+	os.system('%s %s %s %s %s' % (p.getBin(),
+				p.getArgs(),
+				p.mkUserArg(parsed.user),
+				p.mkPasswordArg(parsed.password),
+				p.mkHostPort(parsed.port) ))
