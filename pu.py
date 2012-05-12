@@ -35,6 +35,7 @@ optionParser.add_argument('-C', '--command', action='store', dest='ssh_remote_co
 optionParser.add_argument('-u', '--user', action='store', dest='user', help='Login with this user. To be used with -r/--rdp')
 optionParser.add_argument('-p', '--password', action='store', dest='password', help='Login with this password. To be used with -r/--rdp')
 optionParser.add_argument('-P', '--port', action='store', dest='port', help='Use this Port. To be used with -c/--conn')
+optionParser.add_argument('-x', '--context', action='store', dest='context', default='', help='use this destination context')
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 miscParser.add_argument('--config', action='store', dest='configFile',
@@ -115,34 +116,49 @@ class Dataparser:
 		self.portArg = ''
 		#self.regex = re.compile('((?P<login>\w+)(:(?P<password>\w+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
 		self.regex = re.compile('((?P<login>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
+		self.context = ''
 
 	def setSection(self, section):
 		self.section = section
 
+	def setContext(self, context):
+		self.context = context
+
 	def getList(self):
 		if not self.section:
 			raise ValueError('section not set')
-		print (Table('destinations', ['name', 'destination'], config.items(self.section)))
+		if self.context != '':
+			print (Table('destinations', ['name', 'destination'], [itm for itm in config.items(self.section) if re.match('^%s\.' % self.context, itm[0])]))
+		else:
+			print (Table('destinations', ['name', 'destination'], [itm for itm in config.items(self.section)]))
 
 	def suggestTarget(self, keyword):
 		if keyword == 'list':
 			self.getList()
 			exit(0)
 
+		if self.context != '':
+			l = dict(itm for itm in config.items(self.section) if re.match('^%s.' % self.context, itm[0]))
+		else:
+			l = dict(config.items(self.section))
+
 		try:
-			self.value = config.get(self.section, keyword)
+			self.value = l[keyword]
 		except:
-			self.suggest = [itm for itm in config.options(self.section) if keyword in itm]
+			if self.context != '':
+				self.suggest = [itm for itm in l if re.match('^%s\..*%s.*' % (self.context, keyword) , itm)]
+			else:
+				self.suggest = [itm for itm in l if keyword in itm]
+
 			if len(self.suggest) == 1:
 				self.target = self.suggest.pop()
-				self.value = config.get(self.section, self.target)
+				self.value = l[self.target]
 				print ('assuming "%s" is the right target' % self.target)
 			else:
 				print ('"%s" not found.' % keyword)
 				if len(self.suggest) > 0:
-					for i, v in enumerate(self.suggest): self.enum.append([i,v])
 					print ('You may mean one of the following:')
-					print (Table('matching', ['#', 'destination'], self.enum))
+					print (Table('matching', ['name', 'address'], [[itm, l[itm]] for itm in  self.suggest]))
 				exit(1)
 
 		#return self.value
@@ -222,6 +238,7 @@ class Dataparser:
 		else:			return self.getHost()
 
 p = Dataparser()
+p.setContext(parsed.context)
 
 if parsed.dst_ssh:
 	p.setSection('SSH')
