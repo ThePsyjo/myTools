@@ -1,10 +1,14 @@
-from icalendar import Calendar, Event
 from datetime import datetime, timedelta
 from os import path
 import re
 import argparse
 
 parser = argparse.ArgumentParser(description='blah')
+
+source_parser = parser.add_mutually_exclusive_group(required=True)
+
+source_parser.add_argument('-i', '--ical', action='store', dest='ical')
+source_parser.add_argument('-c', '--csv', action='store', dest='csv')
 
 parser.add_argument('-b', '--blocksize', action='store', dest='blocksize', default=900, type=int)
 parser.add_argument('-x', '--tudiff', action='store', dest='tudiff', default=1, type=int)
@@ -16,20 +20,38 @@ parser.add_argument('-B', '--block', action='store_const', dest='block', default
 
 parsed = parser.parse_args()
 
-l = []
 tu = 0
 what = ''
 
-#extract data from calendar
-cal = Calendar.from_string(open(path.expanduser('~/.kde/share/apps/ktimetracker/ktimetracker.ics'),'rb').read())
-for comp in cal.walk():
-#	print comp
-	try:	comment = comp['comment'].pop()
-	except:	comment = ''
-	try:
-		if re.match('^%s' % parsed.prefix, comp['summary']):
-			l.append([datetime.strptime(str(comp['dtstart']), '%Y%m%dT%H%M%S'), datetime.strptime(str(comp['dtend']), '%Y%m%dT%H%M%S') + timedelta(seconds=59), comp['summary'], comment])
-	except:	pass
+def readICal(filename):
+	from icalendar import Calendar, Event
+	l = []
+	#extract data from calendar
+	cal = Calendar.from_string(open(path.expanduser(filename),'rb').read())
+	for comp in cal.walk():
+	#	print comp
+		try:	comment = comp['comment'].pop()
+		except:	comment = ''
+		try:
+			if re.match('^%s' % parsed.prefix, comp['summary']):
+				l.append([datetime.strptime(str(comp['dtstart']), '%Y%m%dT%H%M%S'), datetime.strptime(str(comp['dtend']), '%Y%m%dT%H%M%S') + timedelta(seconds=59), comp['summary'], comment])
+		except:	pass
+	return l
+
+def readCSV(filename):
+	import csv
+	l = []
+	for row in csv.reader(open(filename, 'rb'), delimiter=';'):
+		try:	comment = row[3]
+		except:	comment = ''
+		l.append([datetime.strptime(row[0], '%Y%m%dT%H%M%S'), datetime.strptime(row[1], '%Y%m%dT%H%M%S'), row[2], comment])
+	return l
+
+if parsed.csv:
+	l = readCSV(parsed.csv)
+elif parsed.ical:
+	l = readICal(parsed.ical)
+# else: die
 
 def getsortkey(x):
 	return x[0]
@@ -88,7 +110,7 @@ if parsed.block:
 			else:
 				discount = 0
 
-	#		print duration
+			#print duration
 			tu = float( (duration.seconds - discount + parsed.blocksize - 1 ) / parsed.blocksize ) / parsed.tudiff
 			print('%s;%s;%s;%s;%s' % ( l[block_begin_idx][0].strftime('%Y-%m-%d %H:%M'), l[n][1].strftime('%Y-%m-%d %H.%M'), tu, parsed.person, ', '.join(what)))
 
