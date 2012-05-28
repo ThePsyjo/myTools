@@ -36,6 +36,7 @@ optionParser.add_argument('-u', '--user', action='store', dest='user', help='Log
 optionParser.add_argument('-p', '--password', action='store', dest='password', help='Login with this password. To be used with -r/--rdp')
 optionParser.add_argument('-P', '--port', action='store', dest='port', help='Use this Port. To be used with -c/--conn')
 optionParser.add_argument('-x', '--context', action='store', dest='context', default='', help='use this destination context')
+optionParser.add_argument('-S', '--show', action='store_const', const=True, dest='show', default=False, help='Show found entry end exit')
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 miscParser.add_argument('--config', action='store', dest='configFile',
@@ -163,6 +164,9 @@ class Dataparser:
 
 		#return self.value
 		self.value = self.regex.match(self.value).groupdict()
+		if parsed.show:
+			print (self.value)
+			exit(0)
 		#print self.value
 
 	def getHost(self):
