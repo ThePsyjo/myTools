@@ -44,7 +44,8 @@ def readCSV(filename):
 	for row in csv.reader(open(filename, 'rb'), delimiter=';'):
 		try:	comment = row[3]
 		except:	comment = ''
-		l.append([datetime.strptime(row[0], '%Y%m%dT%H%M%S'), datetime.strptime(row[1], '%Y%m%dT%H%M%S'), row[2], comment])
+		if re.match('^%s' % parsed.prefix, row[2]):
+			l.append([datetime.strptime(row[0], '%Y%m%dT%H%M%S'), datetime.strptime(row[1], '%Y%m%dT%H%M%S'), row[2], comment])
 	return l
 
 if parsed.csv:
