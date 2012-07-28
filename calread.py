@@ -42,6 +42,7 @@ def readCSV(filename):
 	import csv
 	l = []
 	for row in csv.reader(open(filename, 'rb'), delimiter=';'):
+		if len(row) < 2: continue
 		try:	comment = row[3]
 		except:	comment = ''
 		if re.match('^%s' % parsed.prefix, row[2]):
@@ -113,7 +114,7 @@ if parsed.block:
 
 			#print duration
 			tu = float( (duration.seconds - discount + parsed.blocksize - 1 ) / parsed.blocksize ) / parsed.tudiff
-			print('%s;%s;%s;%s;%s' % ( l[block_begin_idx][0].strftime('%Y-%m-%d %H:%M'), l[n][1].strftime('%Y-%m-%d %H.%M'), tu, parsed.person, ', '.join(what)))
+			print('%s;%s;%s;%s;%s' % ( l[block_begin_idx][0].strftime('%Y-%m-%d %H:%M'), l[n][1].strftime('%Y-%m-%d %H:%M'), str(tu).replace('.',','), parsed.person, ', '.join(what)))
 
 			# set new begin_index to next item
 			block_begin_idx = n + 1
