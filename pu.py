@@ -37,6 +37,7 @@ optionParser.add_argument('-p', '--password', action='store', dest='password', h
 optionParser.add_argument('-P', '--port', action='store', dest='port', help='Use this Port. To be used with -c/--conn')
 optionParser.add_argument('-x', '--context', action='store', dest='context', default='', help='use this destination context')
 optionParser.add_argument('-S', '--show', action='store_const', const=True, dest='show', default=False, help='Show found entry end exit')
+optionParser.add_argument('-H', '--show-host', action='store_const', const=True, dest='showHost', default=False, help='Show just the host if found')
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 miscParser.add_argument('--config', action='store', dest='configFile',
@@ -116,7 +117,7 @@ class Dataparser:
 		self.passwordArg = ''
 		self.portArg = ''
 		#self.regex = re.compile('((?P<login>\w+)(:(?P<password>\w+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
-		self.regex = re.compile('((?P<login>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
+		self.regex = re.compile('((?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
 		self.context = ''
 
 	def setSection(self, section):
@@ -167,49 +168,39 @@ class Dataparser:
 		if parsed.show:
 			print (self.value)
 			exit(0)
+		if parsed.showHost:
+			print (self.value['host'])
+			exit(0)
 		#print self.value
 
+	def getFromValue(self, key):
+		return self.value[key]
+
 	def getHost(self):
-		return self.value['host']
+		return self.getFromValue('host')
 	def getUser(self):
-		return self.value['login']
+		return self.getFromValue('user')
 	def getPassword(self):
-		return self.value['password']
+		return self.getFromValue('password')
 	def getPort(self):
-		return self.value['port']
+		return self.getFromValue('port')
+
+	def getFromConfig(self, key, default='', msg=True, exit=True):
+		try: value = config.get('%s_Options' % self.section, key)
+		except:
+			if msg:
+				print('"%s" not set in section "%s_Options" !' % ( key, self.section ))
+			if exit:
+				sys.exit(1)
+			value = default
+		return value
 
 	def getArgs(self):
-		try: self.args = config.get('%s_Options' % self.section, 'args')
-		except: self.args = ''
+		self.args = self.getFromConfig('args', default='', msg=False, exit=False)
 		return self.args
-
-	def getUserArg(self):
-		try: self.userArg = config.get('%s_Options' % self.section, 'userArg')
-		except:
-			print('"userArg" not set in section %s !' % '"%s_Options"' % self.section)
-			sys.exit(1)
-		return self.userArg
-
-	def getPasswordArg(self):
-		try: self.passwordArg = config.get('%s_Options' % self.section, 'passwordArg')
-		except:
-			print('"passwordArg" not set in section %s !' % '"%s_Options"' % self.section)
-			sys.exit(1)
-		return self.passwordArg
-
-	def getPortArg(self):
-		try: self.portArg = config.get('%s_Options' % self.section, 'portArg')
-		except:
-			print('"portArg" not set in section %s !' % '"%s_Options"' % self.section)
-			sys.exit(1)
-		return self.portArg
 
 	def getBin(self):
-		try: self.args = config.get('%s_Options' % self.section, 'bin')
-		except:
-			print('"bin" not set in section %s !' % '"%s_Options"' % self.section)
-			exit(1)
-		return self.args
+		return self.getFromConfig('bin')
 
 	def concat(self, glue, one, two):
 		return '%s%s%s' % ( one, glue, two )
@@ -221,25 +212,19 @@ class Dataparser:
 			else:					return txt
 		else:	return txt
 
+	def mkConcat(self, first, glue, localchoice, configchoice, fallback):
+		if localchoice:		return self.concat(glue, first, localchoice)
+		elif configchoice:	return self.concat(glue, first, configchoice)
+		else:			return fallback
+
 	def mkPortArg(self, port):
-		if port:		return self.concat(' ', self.getPortArg(), port)
-		elif self.getPort():	return self.concat(' ', self.getPortArg(), self.getPort())
-		else:			return ''
-
+		return self.mkConcat(self.getFromConfig('portArg'), ' ', port, self.getFromValue('port'), '')
 	def mkUserArg(self, user):
-		if user:		return self.concat(' ', self.getUserArg(), user)
-		elif self.getUser():	return self.concat(' ', self.getUserArg(), self.getUser())
-		else:			return ''
-
+		return self.mkConcat(self.getFromConfig('userArg'), ' ', user, self.getFromValue('user'), '')
 	def mkPasswordArg(self, password):
-		if password:		return self.concat(' ', self.getPasswordArg(), self.quote(password))
-		elif self.getPassword():return self.concat(' ', self.getPasswordArg(), self.quote(self.getPassword()))
-		else:			return ''
-
+		return self.mkConcat(self.getFromConfig('passwordArg'), ' ', password, self.getFromValue('password'), '')
 	def mkHostPort(self, port):
-		if port:		return self.concat(':', self.getHost(), port)
-		elif self.getPort():	return self.concat(':', self.getHost(), self.getPort())
-		else:			return self.getHost()
+		return self.mkConcat(self.getHost(), ':', port, self.getFromValue('port'), self.getHost())
 
 p = Dataparser()
 p.setContext(parsed.context)
