@@ -38,6 +38,7 @@ optionParser.add_argument('-P', '--port', action='store', dest='port', help='Use
 optionParser.add_argument('-x', '--context', action='store', dest='context', default='', help='use this destination context')
 optionParser.add_argument('-S', '--show', action='store_const', const=True, dest='show', default=False, help='Show found entry end exit')
 optionParser.add_argument('-H', '--show-host', action='store_const', const=True, dest='showHost', default=False, help='Show just the host if found')
+optionParser.add_argument('-q', '--quiet', action='store_true', dest='quiet', default=False, help='do not print informations')
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
 miscParser.add_argument('--config', action='store', dest='configFile',
@@ -155,7 +156,8 @@ class Dataparser:
 			if len(self.suggest) == 1:
 				self.target = self.suggest.pop()
 				self.value = l[self.target]
-				print ('assuming "%s" is the right target' % self.target)
+				if not parsed.quiet:
+					print ('assuming "%s" is the right target' % self.target)
 			else:
 				print ('"%s" not found.' % keyword)
 				if len(self.suggest) > 0:
