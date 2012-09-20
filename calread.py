@@ -9,6 +9,7 @@ source_parser = parser.add_mutually_exclusive_group(required=True)
 
 source_parser.add_argument('-i', '--ical', action='store', dest='ical')
 source_parser.add_argument('-c', '--csv', action='store', dest='csv')
+source_parser.add_argument('-l', '--sqlite', action='store', dest='sqlite')
 
 parser.add_argument('-b', '--blocksize', action='store', dest='blocksize', default=900, type=int)
 parser.add_argument('-x', '--tudiff', action='store', dest='tudiff', default=1, type=int)
@@ -49,10 +50,24 @@ def readCSV(filename):
 			l.append([datetime.strptime(row[0], '%Y%m%dT%H%M%S'), datetime.strptime(row[1], '%Y%m%dT%H%M%S'), row[2], comment])
 	return l
 
+def readSqlite(filename):
+	import sqlite3
+	l = []
+	db = sqlite3.connect(filename)
+	cursor = db.cursor()
+	cursor.execute('SELECT time_begin, time_end, description, note FROM tt')
+	for row in cursor.fetchall():
+		if len(row) < 3: continue
+		if re.match('^%s' % parsed.prefix, row[2]):
+			l.append([datetime.fromtimestamp(row[0]), datetime.fromtimestamp(row[1]), row[2], row[3]])
+	return l
+
 if parsed.csv:
 	l = readCSV(parsed.csv)
 elif parsed.ical:
 	l = readICal(parsed.ical)
+elif parsed.sqlite:
+	l = readSqlite(parsed.sqlite)
 # else: die
 
 def getsortkey(x):
