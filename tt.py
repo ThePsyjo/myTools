@@ -19,6 +19,7 @@ from PyQt4.QtGui import QMainWindow, QWidget, QStatusBar, QLineEdit, QGridLayout
 import sqlite3
 from datetime import datetime
 from time import mktime
+import re
 
 
 class TplRow(QWidget):
@@ -75,7 +76,6 @@ class TplRow(QWidget):
 	@pyqtSlot()
 	def delete(self):
 		if self.idLabel.text():
-			#print QMessageBox.question(self, 'delete ?', 'really delete id %s ?' % self.idLabel.text(), QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
 			if QMessageBox.question(self, 'delete ?', 'really delete id %s ?' % self.idLabel.text(), QMessageBox.Yes|QMessageBox.No, QMessageBox.No) == QMessageBox.Yes:
 				self.emit(SIGNAL('del(int)'), self.id)
 
@@ -152,6 +152,8 @@ class MainWindow(QMainWindow):
 		
 		self.listSize = 15
 		self.verbose = False
+
+		self.timePattern = re.compile('\.[0-9]+$')
 		
 		self.setWindowTitle('%s %s' % (QApplication.applicationName(), QApplication.applicationVersion()));
 		
@@ -178,7 +180,7 @@ class MainWindow(QMainWindow):
 		self.connect(self.pageBackwardButton, SIGNAL('clicked()'), self.pageBackward)
 		
 		self.timer = QTimer(self)
-		self.timer.setInterval(300)
+		self.timer.setInterval(1000)
 		self.connect(self.timer, SIGNAL('timeout()'), self, SLOT('onTimer()'))
 		self.time_begin = datetime.now()
 		self.time_end = datetime.now()
@@ -310,7 +312,7 @@ class MainWindow(QMainWindow):
 		
 	@pyqtSlot()
 	def onTimer(self):
-		self.startStopButton.setText('Stop (%8s)' % ( datetime.now() - self.time_begin ) )
+		self.startStopButton.setText('Stop (%s)' % self.timePattern.sub( '', str( datetime.now() - self.time_begin ) ) )
 
 	@pyqtSlot()
 	def onStartStop(self):
@@ -342,7 +344,7 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 
 app.setApplicationName('TimeTrack')
-app.setApplicationVersion('0.1.1')
+app.setApplicationVersion('0.1.2')
 app.setQuitOnLastWindowClosed(True)
 
 w = MainWindow()
