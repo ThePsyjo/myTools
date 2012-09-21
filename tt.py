@@ -12,9 +12,8 @@
 # echo ".dump tt" | sqlite3 .tt.db | gzip -f - > $(date +tt_%Y%m%d_%H.sql.gz)
 import sys
 import os
-from PyQt4.QtGui import QApplication
 from PyQt4.QtCore import QTimer,SIGNAL, SLOT, pyqtSlot, QDateTime, QStringList
-from PyQt4.QtGui import QMainWindow, QWidget, QStatusBar, QLineEdit, QGridLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout, QDateTimeEdit, QVBoxLayout, QCompleter
+from PyQt4.QtGui import QApplication, QMainWindow, QWidget, QStatusBar, QLineEdit, QGridLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout, QDateTimeEdit, QVBoxLayout, QCompleter, QGroupBox, QFont
 
 import sqlite3
 from datetime import datetime
@@ -84,7 +83,7 @@ class TplRow(QWidget):
 		if self.idLabel.text():
 			self.emit(SIGNAL('valueChanged(int)'), self.id)
 		
-class TplTable(QWidget):
+class TplTable(QGroupBox):
 	def __init__(self, parent = None, size = 10):
 		super(TplTable, self).__init__(parent)
 		
@@ -198,10 +197,12 @@ class MainWindow(QMainWindow):
 		
 		self.descriptionLabel = QLabel(self.widget)
 		self.descriptionLabel.setText('Beschreibung')
+		self.descriptionLabel.setMaximumHeight( self.font().pointSize() * 2 )
 		self.descriptionInput = QLineEdit(self.widget)
 		self.updateDescriptionEditCompleter()				
 		self.noteLabel = QLabel(self.widget)
 		self.noteLabel.setText('Notiz')
+		self.noteLabel.setMaximumHeight( self.font().pointSize() * 2 )
 		self.noteInput = QLineEdit(self.widget)
 		self.startStopButton = QPushButton(self.widget)
 		self.startStopButton.setText('Start')
