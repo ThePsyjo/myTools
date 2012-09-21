@@ -13,7 +13,7 @@
 import sys
 import os
 from PyQt4.QtCore import QTimer,SIGNAL, SLOT, pyqtSlot, QDateTime, QStringList
-from PyQt4.QtGui import QApplication, QMainWindow, QWidget, QStatusBar, QLineEdit, QGridLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout, QDateTimeEdit, QVBoxLayout, QCompleter, QGroupBox, QFont
+from PyQt4.QtGui import QApplication, QMainWindow, QWidget, QStatusBar, QLineEdit, QGridLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout, QDateTimeEdit, QVBoxLayout, QCompleter, QGroupBox, QFont, QKeySequence, QAction
 
 import sqlite3
 from datetime import datetime
@@ -42,6 +42,8 @@ class TplRow(QWidget):
 		self.layout().addWidget(self.descriptionEdit)
 		self.layout().addWidget(self.noteEdit)
 		self.layout().addWidget(self.delButton)
+
+		self.layout().setContentsMargins(2,2,2,2)
 		
 		self.connect(self.descriptionEdit, SIGNAL('editingFinished ()'), self.notify)
 		self.connect(self.noteEdit, SIGNAL('editingFinished ()'), self.notify)
@@ -89,6 +91,7 @@ class TplTable(QGroupBox):
 		
 		self.size = size
 		self.setLayout(QVBoxLayout())
+		self.layout().setSpacing(2)
 		
 		self.rows = {}
 		for n in range(self.size):
@@ -149,7 +152,7 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		QMainWindow.__init__(self)
 		
-		self.listSize = 15
+		self.listSize = 20
 		self.verbose = False
 
 		self.timePattern = re.compile('\.[0-9]+$')
@@ -208,7 +211,17 @@ class MainWindow(QMainWindow):
 		self.startStopButton.setText('Start')
 		
 		self.tableView = TplTable(self, self.listSize)
-		
+
+		self.pageForwardAction = QAction(self)
+		self.pageForwardAction.setShortcut(QKeySequence('Right'))
+		self.connect(self.pageForwardAction, SIGNAL('triggered()'), self.pageForward);
+		self.pageForwardButton.addAction(self.pageForwardAction)
+
+		self.pageBackwardAction = QAction(self)
+		self.pageBackwardAction.setShortcut(QKeySequence('Left'))
+		self.connect(self.pageBackwardAction, SIGNAL('triggered()'), self.pageBackward);
+		self.pageBackwardButton.addAction(self.pageBackwardAction)
+
 		self.updateTplTable()
 			
 		self.layout.addWidget(self.descriptionLabel, 0, 0, 1, 1)
@@ -336,7 +349,7 @@ class MainWindow(QMainWindow):
 			self.onTimer()
 
 	def onAboutAppAction(self):
-		QMessageBox.about(self, self.tr("&about"), self.tr("name %1 version %2").arg(QApplication.applicationName()).arg(QApplication.applicationVersion()))
+		QMessageBox.about(self, self.tr("&about"), self.tr("%1 version %2").arg(QApplication.applicationName()).arg(QApplication.applicationVersion()))
 		
 	def onAboutQtAction(self):
 		QMessageBox.aboutQt(self, self.tr("&about"))
@@ -345,7 +358,7 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 
 app.setApplicationName('TimeTrack')
-app.setApplicationVersion('0.1.2')
+app.setApplicationVersion('0.1.3')
 app.setQuitOnLastWindowClosed(True)
 
 w = MainWindow()
