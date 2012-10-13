@@ -38,6 +38,7 @@ optionParser.add_argument('-P', '--port', action='store', dest='port', help='Use
 optionParser.add_argument('-x', '--context', action='store', dest='context', default='', help='use this destination context')
 optionParser.add_argument('-S', '--show', action='store_const', const=True, dest='show', default=False, help='Show found entry end exit')
 optionParser.add_argument('-H', '--show-host', action='store_const', const=True, dest='showHost', default=False, help='Show just the host if found')
+optionParser.add_argument('-i', '--ping', action='store_const', const=True, dest='pingHost', default=False, help='Ping the host instead of connecting to it. To be used with -c/--conn')
 optionParser.add_argument('-q', '--quiet', action='store_true', dest='quiet', default=False, help='do not print informations')
 
 miscParser = parser.add_argument_group(title='Miscellaneous', description='Other stuff')
@@ -235,7 +236,10 @@ if parsed.dst_ssh:
 	p.setSection('SSH')
 	p.suggestTarget(parsed.dst_ssh)
 
-	os.system('%s %s %s %s %s %s' % (p.getBin(),
+	if parsed.pingHost:
+		os.system('ping %s' % (	p.getHost() ) )
+	else:
+		os.system('%s %s %s %s %s %s' % (p.getBin(),
 					p.getArgs(),
 					p.mkPortArg(parsed.port),
 					p.mkUserArg(parsed.user),
