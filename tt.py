@@ -12,14 +12,22 @@
 # echo ".dump tt" | sqlite3 .tt.db | gzip -f - > $(date +tt_%Y%m%d_%H.sql.gz)
 import sys
 import os
-from PyQt4.QtCore import QTimer,SIGNAL, SLOT, pyqtSlot, QDateTime, QStringList
-from PyQt4.QtGui import QApplication, QMainWindow, QWidget, QStatusBar, QLineEdit, QGridLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout, QDateTimeEdit, QVBoxLayout, QCompleter, QGroupBox, QFont, QKeySequence, QAction
+from PyQt4.QtCore import QTimer,SIGNAL, SLOT, pyqtSlot, pyqtSignal, QDateTime, QStringList
+from PyQt4.QtGui import QApplication, QMainWindow, QWidget, QStatusBar, QLineEdit, QGridLayout, QMessageBox, QLabel, QPushButton, QHBoxLayout, QDateTimeEdit, QVBoxLayout, QCompleter, QGroupBox, QFont, QKeySequence, QAction, QMouseEvent
 
 import sqlite3
 from datetime import datetime
 from time import mktime
 import re
+from math import ceil
 
+
+class ClickLabel( QLabel ):
+	def __init__(self, parent = None):
+		super(ClickLabel, self).__init__(parent)
+
+	def mousePressEvent ( self, QMouseEvent ):
+		self.emit( SIGNAL( 'clicked()' ) )
 
 class TplRow(QWidget):
 	def __init__(self, parent = None, _id = 0):
@@ -31,6 +39,7 @@ class TplRow(QWidget):
 		self.beginEdit.setCalendarPopup(True) 
 		self.endEdit = QDateTimeEdit(self)
 		self.endEdit.setCalendarPopup(True)
+		self.timeDiff = ClickLabel(self)
 		self.descriptionEdit = QLineEdit(self)
 		self.noteEdit = QLineEdit(self)
 		self.delButton = QPushButton(self)
@@ -39,6 +48,7 @@ class TplRow(QWidget):
 		self.layout().addWidget(self.idLabel)
 		self.layout().addWidget(self.beginEdit)
 		self.layout().addWidget(self.endEdit)
+		self.layout().addWidget(self.timeDiff)
 		self.layout().addWidget(self.descriptionEdit)
 		self.layout().addWidget(self.noteEdit)
 		self.layout().addWidget(self.delButton)
@@ -50,11 +60,13 @@ class TplRow(QWidget):
 		self.connect(self.beginEdit, SIGNAL('editingFinished ()'), self.notify)
 		self.connect(self.endEdit, SIGNAL('editingFinished ()'), self.notify)
 		self.connect(self.delButton, SIGNAL('clicked()'), self.delete)
-		
+		self.connect(self.timeDiff, SIGNAL('clicked()'), self.onTimeDiff)
+
 	def set(self, tpl):
 		self.idLabel.setText(str(tpl[0]))
 		self.beginEdit.setDateTime(QDateTime.fromTime_t(tpl[1]))
 		self.endEdit.setDateTime(QDateTime.fromTime_t(tpl[2]))
+		self.timeDiff.setText( self.mkDiff( tpl[1], tpl[2] ) )
 		self.descriptionEdit.setText(tpl[3])
 		self.noteEdit.setText(tpl[4])
 	
@@ -74,6 +86,14 @@ class TplRow(QWidget):
 		self.noteEdit.clear()
 		self.idLabel.clear()
 
+	def mkDiff(self, begin, end):
+		return '%4d' % ceil( float( end - begin ) / 60 )
+
+	@pyqtSlot()
+	def onTimeDiff(self):
+		self.parent().parent().parent().statusBar.showMessage( '%s copied to clipboard.' % self.timeDiff.text() )
+		self.parent().clipboard.setText( self.timeDiff.text() )
+
 	@pyqtSlot()
 	def delete(self):
 		if self.idLabel.text():
@@ -83,6 +103,7 @@ class TplRow(QWidget):
 	@pyqtSlot()
 	def notify(self):
 		if self.idLabel.text():
+			self.timeDiff.setText( self.mkDiff( self.beginEdit.dateTime().toTime_t(), self.endEdit.dateTime().toTime_t() ) )
 			self.emit(SIGNAL('valueChanged(int)'), self.id)
 		
 class TplTable(QGroupBox):
@@ -92,6 +113,7 @@ class TplTable(QGroupBox):
 		self.size = size
 		self.setLayout(QVBoxLayout())
 		self.layout().setSpacing(2)
+		self.clipboard = QApplication.clipboard()
 		
 		self.rows = {}
 		for n in range(self.size):
@@ -234,6 +256,7 @@ class MainWindow(QMainWindow):
 		self.layout.addWidget(self.pageForwardButton, 4, 1, 1, 1)
 
 		self.connect(self.descriptionInput, SIGNAL('returnPressed ()'), self.onStartStop )
+		self.connect(self.noteInput, SIGNAL('returnPressed ()'), self.onStartStop )
 		self.connect(self.startStopButton, SIGNAL('clicked()'), self.onStartStop )
 		self.connect(self.tableView, SIGNAL('valueChanged(int)'), self.onValueChanged )
 		self.connect(self.tableView, SIGNAL('del(int)'), self.onDelete )
@@ -358,7 +381,7 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 
 app.setApplicationName('TimeTrack')
-app.setApplicationVersion('0.1.3')
+app.setApplicationVersion('0.1.4')
 app.setQuitOnLastWindowClosed(True)
 
 w = MainWindow()
