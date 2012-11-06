@@ -92,7 +92,7 @@ class TplRow(QWidget):
 	@pyqtSlot()
 	def onTimeDiff(self):
 		self.parent().parent().parent().statusBar.showMessage( '%s copied to clipboard.' % self.timeDiff.text() )
-		self.parent().clipboard.setText( self.timeDiff.text() )
+		self.parent().clipboard.setText( self.timeDiff.text().strip() )
 
 	@pyqtSlot()
 	def delete(self):
@@ -125,6 +125,7 @@ class TplTable(QGroupBox):
 	def set(self, data):
 		for n in range(self.size):
 			try:
+				self.rows[n].clear()
 				self.rows[n].set(data[n])
 			except:
 				self.rows[n].clear()
@@ -381,7 +382,7 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 
 app.setApplicationName('TimeTrack')
-app.setApplicationVersion('0.1.4')
+app.setApplicationVersion('0.1.5')
 app.setQuitOnLastWindowClosed(True)
 
 w = MainWindow()
