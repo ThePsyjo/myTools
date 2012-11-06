@@ -82,6 +82,7 @@ class TplRow(QWidget):
 	def clear(self):
 		self.beginEdit.clear()
 		self.endEdit.clear()
+		self.timeDiff.clear()
 		self.descriptionEdit.clear()
 		self.noteEdit.clear()
 		self.idLabel.clear()
@@ -92,7 +93,7 @@ class TplRow(QWidget):
 	@pyqtSlot()
 	def onTimeDiff(self):
 		self.parent().parent().parent().statusBar.showMessage( '%s copied to clipboard.' % self.timeDiff.text() )
-		self.parent().clipboard.setText( self.timeDiff.text().strip() )
+		self.parent().clipboard.setText( str(self.timeDiff.text()).strip() )
 
 	@pyqtSlot()
 	def delete(self):
@@ -125,7 +126,6 @@ class TplTable(QGroupBox):
 	def set(self, data):
 		for n in range(self.size):
 			try:
-				self.rows[n].clear()
 				self.rows[n].set(data[n])
 			except:
 				self.rows[n].clear()
