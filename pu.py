@@ -34,6 +34,7 @@ optionParser = parser.add_argument_group(title='Options', description='optional 
 optionParser.add_argument('-C', '--command', action='store', dest='ssh_remote_command', metavar='<command>', help='Pass this command to the target. To be used with -c/--conn')
 optionParser.add_argument('-u', '--user', action='store', dest='user', help='Login with this user. To be used with -r/--rdp')
 optionParser.add_argument('-p', '--password', action='store', dest='password', help='Login with this password. To be used with -r/--rdp')
+optionParser.add_argument('-d', '--domain', action='store', dest='domain', help='Login using this domain. To be used with -r/--rdp')
 optionParser.add_argument('-P', '--port', action='store', dest='port', help='Use this Port. To be used with -c/--conn')
 optionParser.add_argument('-x', '--context', action='store', dest='context', default='', help='use this destination context')
 optionParser.add_argument('-S', '--show', action='store_const', const=True, dest='show', default=False, help='Show found entry end exit')
@@ -119,7 +120,8 @@ class Dataparser:
 		self.passwordArg = ''
 		self.portArg = ''
 		#self.regex = re.compile('((?P<login>\w+)(:(?P<password>\w+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
-		self.regex = re.compile('((?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
+		#self.regex = re.compile('((?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
+		self.regex = re.compile('(((?P<domain>[^\\\\]+)\\\\)?(?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
 		self.context = ''
 
 	def setSection(self, section):
@@ -181,6 +183,8 @@ class Dataparser:
 
 	def getHost(self):
 		return self.getFromValue('host')
+	def getDomain(self):
+		return self.getFromValue('domain')
 	def getUser(self):
 		return self.getFromValue('user')
 	def getPassword(self):
@@ -222,6 +226,8 @@ class Dataparser:
 
 	def mkPortArg(self, port):
 		return self.mkConcat(self.getFromConfig('portArg'), ' ', port, self.getFromValue('port'), '')
+	def mkDomainArg(self, domain):
+		return self.mkConcat(self.getFromConfig('domainArg'), ' ', domain, self.getFromValue('domain'), '')
 	def mkUserArg(self, user):
 		return self.mkConcat(self.getFromConfig('userArg'), ' ', user, self.getFromValue('user'), '')
 	def mkPasswordArg(self, password):
