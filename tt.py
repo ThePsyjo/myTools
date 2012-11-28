@@ -67,8 +67,8 @@ class TplRow(QWidget):
 		self.beginEdit.setDateTime(QDateTime.fromTime_t(tpl[1]))
 		self.endEdit.setDateTime(QDateTime.fromTime_t(tpl[2]))
 		self.timeDiff.setText( self.mkDiff( tpl[1], tpl[2] ) )
-		self.descriptionEdit.setText(tpl[3])
-		self.noteEdit.setText(tpl[4])
+		self.descriptionEdit.setText(str(tpl[3]))
+		self.noteEdit.setText(str(tpl[4]))
 	
 	def get(self):
 		tpl = []
@@ -382,7 +382,7 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 
 app.setApplicationName('TimeTrack')
-app.setApplicationVersion('0.1.5')
+app.setApplicationVersion('0.1.6')
 app.setQuitOnLastWindowClosed(True)
 
 w = MainWindow()
