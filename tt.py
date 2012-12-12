@@ -215,9 +215,33 @@ class MainWindow(QMainWindow):
 		self.cursor = self.db.cursor()
 		
 		try:
-			self.cursor.execute('SELECT id FROM tt LIMIT 1')
+			self.cursor.execute('SELECT id FROM timebrowser_record LIMIT 1')
 		except:
-			self.createDb()
+			try:
+#				print 'migrate'
+#				print 'try tt'
+				self.cursor.execute('SELECT id FROM tt LIMIT 1')
+#				print 'may drop timebrowser_record'
+				self.cursor.execute('DROP TABLE IF EXISTS timebrowser_record')
+#				print 'get create statements'
+				self.cursor.execute('''SELECT sql FROM sqlite_master WHERE type='table' AND name='tt' ''')
+				sql1 = self.cursor.fetchone()[0].replace( ' tt ', ' timebrowser_record ' )
+				self.cursor.execute('''SELECT sql FROM sqlite_master WHERE type='index' AND tbl_name='tt' ''')
+				sql2 = self.cursor.fetchone()[0].replace( ' tt ', ' timebrowser_record ' )
+#				print 'drop index'
+				self.cursor.execute('DROP INDEX IF EXISTS idx_time_begin')
+#				print 'apply create statements'
+				self.cursor.execute( sql1 )
+				self.cursor.execute( sql2 )
+#				print 'copy data'
+				self.cursor.execute( 'INSERT INTO timebrowser_record SELECT * FROM tt' )
+#				print 'drop tt'
+				self.cursor.execute( 'DROP TABLE tt' )
+				self.statusBar.showMessage('successfully migrated Database!')
+#				print 'done'
+			except:# Exception, e:
+#				print e
+				self.createDb()
 		
 		self.layout = QGridLayout(self.widget)
 		
@@ -267,18 +291,18 @@ class MainWindow(QMainWindow):
 	
 	def createDb(self):
 		try:
-			self.q('''CREATE TABLE tt (
+			self.q('''CREATE TABLE timebrowser_record (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			time_begin INTEGER,
 			time_end INTEGER,
 			description STRING,
 			note STRING DEFAULT ""
 			)''')
-			self.q('CREATE INDEX idx_time_begin ON tt (time_begin)')
+			self.q('CREATE INDEX idx_time_begin ON timebrowser_record (time_begin)')
 		except:
 			self.statusBar.showMessage('error creating Database!')
 		else:
-			self.statusBar.showMessage('Database tt created successfully')
+			self.statusBar.showMessage('Table timebrowser_record created successfully')
 			
 	def q(self, query):
 		try:
@@ -289,11 +313,11 @@ class MainWindow(QMainWindow):
 			self.db.commit()
 	
 	def updateTplTable(self):
-		self.q('SELECT * FROM tt ORDER BY time_begin DESC LIMIT %d' % ( self.listSize ) )
+		self.q('SELECT * FROM timebrowser_record ORDER BY time_begin DESC LIMIT %d' % ( self.listSize ) )
 		self.tableView.set(self.cursor.fetchall())
 		
 	def updateDescriptionEditCompleter(self):
-		self.q('SELECT DISTINCT description FROM tt')
+		self.q('SELECT DISTINCT description FROM timebrowser_record')
 		words = QStringList()
 		for word in self.cursor.fetchall():
 			words.append(word[0])
@@ -301,9 +325,9 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot()
 	def pageForward(self):
-		self.q('SELECT MIN(time_begin) FROM tt')
+		self.q('SELECT MIN(time_begin) FROM timebrowser_record')
 		if not self.tableView.getLastTime() == self.cursor.fetchone()[0]:
-			sql = 'SELECT * FROM tt WHERE time_begin < %d  ORDER BY time_begin DESC LIMIT %s' % ( self.tableView.getLastTime(), self.listSize)
+			sql = 'SELECT * FROM timebrowser_record WHERE time_begin < %d  ORDER BY time_begin DESC LIMIT %s' % ( self.tableView.getLastTime(), self.listSize)
 			if self.verbose:
 				print( sql )
 			self.q( sql )
@@ -311,9 +335,9 @@ class MainWindow(QMainWindow):
 
 	@pyqtSlot()
 	def pageBackward(self):
-		self.q('SELECT MAX(time_begin) FROM tt')
+		self.q('SELECT MAX(time_begin) FROM timebrowser_record')
 		if not self.tableView.getFirstTime() == self.cursor.fetchone()[0]:
-			sql = 'SELECT * FROM ( SELECT * FROM tt WHERE time_begin > %d ORDER BY time_begin LIMIT %s ) as tbl ORDER BY time_begin DESC' % ( self.tableView.getFirstTime(), self.listSize)
+			sql = 'SELECT * FROM ( SELECT * FROM timebrowser_record WHERE time_begin > %d ORDER BY time_begin LIMIT %s ) as tbl ORDER BY time_begin DESC' % ( self.tableView.getFirstTime(), self.listSize)
 			if self.verbose:
 				print( sql )
 			self.q( sql )
@@ -330,7 +354,7 @@ class MainWindow(QMainWindow):
 			print self.tableView.get(_id)
 		data = self.tableView.get(_id)
 		self.q('''
-				UPDATE tt
+				UPDATE timebrowser_record
 				SET time_begin = %d,
 				time_end = %d,
 				description = '%s',
@@ -344,7 +368,7 @@ class MainWindow(QMainWindow):
 	def onDelete(self, _id):
 		if self.verbose:
 			print 'del:', _id,self.tableView.get(_id)[0]
-		self.q('DELETE FROM tt WHERE id = %d' % self.tableView.get(_id)[0])
+		self.q('DELETE FROM timebrowser_record WHERE id = %d' % self.tableView.get(_id)[0])
 		self.updateTplTable()
 		self.updateDescriptionEditCompleter()				
 		
@@ -358,7 +382,7 @@ class MainWindow(QMainWindow):
 			self.timer.stop()
 			self.time_end = datetime.now()
 			self.q('''
-				INSERT INTO tt
+				INSERT INTO timebrowser_record
 				(time_begin,time_end,description,note)
 				VALUES
 				('%d','%d','%s','%s')
@@ -382,7 +406,7 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 
 app.setApplicationName('TimeTrack')
-app.setApplicationVersion('0.1.6')
+app.setApplicationVersion('0.1.7')
 app.setQuitOnLastWindowClosed(True)
 
 w = MainWindow()
