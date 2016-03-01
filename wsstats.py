@@ -11,10 +11,10 @@ if  sys.version_info < (2,6):
 	print ('Python is too old here. Upgrade at least to 2.6!')
 	sys.exit(1);
 else:
-	if sys.version_info < (3,0): import ConfigParser
-	else: import configparser as ConfigParser
+	if sys.version_info < (3,0): import ConfigParser  # @UnusedImport
+	else: import configparser as ConfigParser  # @Reimport
 
-import os, argparse, time, MySQLdb
+import os, argparse, MySQLdb
 from datetime import datetime, timedelta, date
 from threading import Thread, Event
 
@@ -138,10 +138,10 @@ class AsciiTable:
 		ncols=len(headers)
 
 		for i in range(ncols):
-			max=0
+			max_cols=0
 			for j in rows:
-				if len(str(j[i]))>max: max=len(str(j[i]))
-			self.fieldlen.append(max)
+				if len(str(j[i]))>max_cols: max_cols=len(str(j[i]))
+			self.fieldlen.append(max_cols)
 
 		for i in range(len(headers)):
 			if len(str(headers[i]))>self.fieldlen[i]: self.fieldlen[i]=len(str(headers[i]))
@@ -239,35 +239,35 @@ def printTable(caption, titles, data):
 	print (Table(caption, titles, data))
 
 class Humanreadable():
-        def __init__(self, val = float(0), div = 1024):
-                self.affix = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
-                self.div = div
-                self.val = val
+	def __init__(self, val = float(0), div = 1024):
+		self.affix = ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+		self.div = div
+		self.val = val
 
-        def calc(self):
-                work = float(self.val) if self.val else float(0)
-                self.index = 0
-                while work >= self.div:
-                        work /= self.div
+	def calc(self):
+		work = float(self.val) if self.val else float(0)
+		self.index = 0
+		while work >= self.div:
+			work /= self.div
 			if self.index >= 8: break
-                        self.index += 1
-                return work
+			self.index += 1
+		return work
 
-        def setDiv(self, div):
-                self.div = div
+	def setDiv(self, div):
+		self.div = div
 
-        def setVal(self, val):
-                self.val = val
+	def setVal(self, val):
+		self.val = val
 
-        def __str__(self):
-                return ''.join(['{0:.4}'.format(self.calc()), self.affix[self.index]])
+	def __str__(self):
+		return ''.join(['{0:.4}'.format(self.calc()), self.affix[self.index]])
 
-        def __float__(self):
-                return self.calc()
+	def __float__(self):
+		return self.calc()
 
-        def prefix(self):
-                self.calc()
-                return self.affix[self.index]
+	def prefix(self):
+		self.calc()
+		return self.affix[self.index]
 
 def humanreadable(val):
 	return Humanreadable(val, 1000)
