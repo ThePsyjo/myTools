@@ -117,7 +117,7 @@ class Dataparser:
         #self.regex = re.compile('((?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
         # self.regex = re.compile('(((?P<domain>[^\\\\]+)\\\\)?(?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host>[^:@]+)(:(?P<port>\d+))?')
         #self.regex = re.compile('(?:(?:(?P<domain>[^\\\\]+)\\\\)?(?P<user>[^:@]+)(?::(?P<password>.*))?@)?(?P<host>[^:]+)(?::(?P<port>\d+))?')
-        self.regex = re.compile('(?:(?:(?P<domain>[^\\\\]+)\\\\)?(?P<user>[^:@]+)(?::(?P<password>.*))?@)?((?P<project>[^/]+)/(?P<region>[^/]+)/)?(?P<host>[^:]+)(?::(?P<port>\d+))?')
+        self.regex = re.compile('(?:(?:(?P<domain>[^\\\\]+)\\\\)?(?P<user>[^:@]+)(?::(?P<password>.*))?@)?((?P<project>[^/]+)/(?P<region>[^/]+)/)?(?P<host>[^:]+)(?::(?P<port>[0-9]+))?')
         self.context = ''
 
     def setSection(self, section):
@@ -130,7 +130,7 @@ class Dataparser:
         if not self.section:
             raise ValueError('section not set')
         if self.context != '':
-            print (Table('destinations', ['name', 'destination'], [itm for itm in config.items(self.section) if re.match('^%s\.' % self.context, itm[0])]))
+            print (Table('destinations', ['name', 'destination'], [itm for itm in config.items(self.section) if re.match('^%s\\.' % self.context, itm[0])]))
         else:
             print (Table('destinations', ['name', 'destination'], [itm for itm in config.items(self.section)]))
 
@@ -140,7 +140,7 @@ class Dataparser:
             exit(0)
 
         if self.context != '':
-            l = dict(itm for itm in config.items(self.section) if re.match('^%s.' % self.context, itm[0]))
+            l = dict(itm for itm in config.items(self.section) if re.match('^%s\\.' % self.context, itm[0]))
         else:
             l = dict(config.items(self.section))
 
@@ -148,7 +148,7 @@ class Dataparser:
             self.value = l[keyword]
         except:
             if self.context != '':
-                self.suggest = [itm for itm in l if re.match('^%s\..*%s.*' % (self.context, keyword) , itm)]
+                self.suggest = [itm for itm in l if re.match('^%s\\..*%s.*' % (self.context, keyword) , itm)]
             else:
                 self.suggest = [itm for itm in l if keyword in itm]
 
